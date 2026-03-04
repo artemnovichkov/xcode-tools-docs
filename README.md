@@ -299,7 +299,7 @@ ExecuteSnippet(
 
 ### GetTestList
 
-Lists all available tests from the active scheme's active test plan.
+Gets all available tests from the active scheme's active test plan. Results are limited to 100 tests. The complete list is written to `fullTestListPath` in grep-friendly format — use grep with keys like `TEST_TARGET`, `TEST_IDENTIFIER`, or `TEST_FILE_PATH` to find specific tests.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
