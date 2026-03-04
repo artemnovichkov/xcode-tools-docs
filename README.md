@@ -6,6 +6,12 @@ A comprehensive reference for the Xcode MCP Server aka Xcode Tools. These tools 
   <img src=".github/screenshot.png" width="60%"/>
 </p>
 
+## Apple Documentation
+
+- [Setting up coding intelligence](https://developer.apple.com/documentation/xcode/setting-up-coding-intelligence)
+- [Writing code with intelligence in Xcode](https://developer.apple.com/documentation/xcode/writing-code-with-intelligence-in-xcode)
+- [Giving agentic coding tools access to Xcode](https://developer.apple.com/documentation/xcode/giving-agentic-coding-tools-access-to-xcode)
+
 ## Prerequisites
 
 - Xcode 26.3+ installed and running with an open workspace
@@ -13,11 +19,25 @@ A comprehensive reference for the Xcode MCP Server aka Xcode Tools. These tools 
 
 > **Note:** Most tools require a `tabIdentifier` parameter that identifies which Xcode workspace tab to operate on.
 
-## Apple Documentation
+## Installation
 
-- [Setting up coding intelligence](https://developer.apple.com/documentation/xcode/setting-up-coding-intelligence)
-- [Writing code with intelligence in Xcode](https://developer.apple.com/documentation/xcode/writing-code-with-intelligence-in-xcode)
-- [Giving agentic coding tools access to Xcode](https://developer.apple.com/documentation/xcode/giving-agentic-coding-tools-access-to-xcode)
+Add the Xcode MCP server to your coding tool via `xcrun mcpbridge`:
+
+**Claude Code:**
+```bash
+claude mcp add --transport stdio xcode -- xcrun mcpbridge
+```
+
+**Codex:**
+```bash
+codex mcp add xcode -- xcrun mcpbridge
+```
+
+Verify with `claude mcp list` or `codex mcp list`.
+
+## Schema
+
+[tools.json](tools.json) contains the full MCP tool definitions (name, title, description, input/output schemas) generated directly from `xcrun mcpbridge`.
 
 ## Table of Contents
 

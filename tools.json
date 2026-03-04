@@ -1,0 +1,1533 @@
+{
+  "tools": [
+    {
+      "name": "XcodeMakeDir",
+      "title": "Create Directory",
+      "description": "Creates directories and groups in the Xcode project structure.",
+      "inputSchema": {
+        "properties": {
+          "directoryPath": {
+            "description": "Project navigator relative path for the directory to create",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "directoryPath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "createdPath": {
+            "description": "The path of the created directory",
+            "type": "string"
+          },
+          "message": {
+            "description": "Result message describing the operation",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the directory creation succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeGrep",
+      "title": "Search Content",
+      "description": "Searches for text patterns in files within the Xcode project structure using regex. Works on Xcode project organization, not filesystem structure. CRITICAL: Must include a 'pattern' argument - this tool will fail without it.",
+      "inputSchema": {
+        "properties": {
+          "glob": {
+            "description": "Only search files matching this pattern",
+            "type": "string"
+          },
+          "headLimit": {
+            "description": "Stop after N results",
+            "type": "integer"
+          },
+          "ignoreCase": {
+            "description": "Ignore case when matching",
+            "type": "boolean"
+          },
+          "linesAfter": {
+            "description": "Show N lines after each match for context",
+            "type": "integer"
+          },
+          "linesBefore": {
+            "description": "Show N lines before each match for context",
+            "type": "integer"
+          },
+          "linesContext": {
+            "description": "Show N lines both before and after each match",
+            "type": "integer"
+          },
+          "multiline": {
+            "description": "Allow patterns to span multiple lines",
+            "type": "boolean"
+          },
+          "outputMode": {
+            "description": "What to return: content, files_with_matches, or count (default: files_with_matches)",
+            "enum": [
+              "content",
+              "filesWithMatches",
+              "count"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "description": "Where to search - file or directory in project (defaults to root)",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "Text to search for using regex. REQUIRED: Must include a 'pattern' argument - this tool will fail without it.",
+            "type": "string"
+          },
+          "showLineNumbers": {
+            "description": "Show line numbers with results (content mode only)",
+            "type": "boolean"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          },
+          "type": {
+            "description": "Shortcut for common file types (swift, js, py, etc.)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "pattern"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "matchCount": {
+            "description": "Total number of matches found",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Additional information about the search results",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "The pattern that was searched for",
+            "type": "string"
+          },
+          "results": {
+            "description": "Search results based on output mode",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "searchPath": {
+            "description": "The project path that was searched",
+            "type": "string"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to limits",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "results",
+          "pattern",
+          "searchPath",
+          "matchCount",
+          "truncated"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "BuildProject",
+      "title": "Build Project",
+      "description": "Builds an Xcode project and waits until the build completes.",
+      "inputSchema": {
+        "properties": {
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "buildResult": {
+            "description": "The message indicating the result of the build operation",
+            "type": "string"
+          },
+          "elapsedTime": {
+            "description": "The time it took to finish the build, in seconds",
+            "type": "number"
+          },
+          "errors": {
+            "description": "List of build errors",
+            "items": {
+              "properties": {
+                "classification": {
+                  "description": "The type of error (error, warning, etc.)",
+                  "type": "string"
+                },
+                "filePath": {
+                  "description": "The file path where the error occurred",
+                  "type": "string"
+                },
+                "lineNumber": {
+                  "description": "The line number where the error occurred",
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "The error message",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "classification",
+                "message"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "buildResult",
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DocumentationSearch",
+      "title": "DocumentationSearch",
+      "description": "Searches Apple Developer Documentation using semantic matching.",
+      "inputSchema": {
+        "properties": {
+          "frameworks": {
+            "description": "Framework(s) to search in. Searches all frameworks if not specified.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "query": {
+            "description": "The search query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "documents": {
+            "description": "The documents most relevant to the search query",
+            "items": {
+              "properties": {
+                "contents": {
+                  "description": "The document contents",
+                  "type": "string"
+                },
+                "score": {
+                  "description": "The matching score of the document",
+                  "type": "number"
+                },
+                "title": {
+                  "description": "The document title",
+                  "type": "string"
+                },
+                "uri": {
+                  "description": "The document uri",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "uri",
+                "contents",
+                "score"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "documents"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RunSomeTests",
+      "title": "Run Some Tests",
+      "description": "Runs specific tests using the active scheme's active test plan",
+      "inputSchema": {
+        "properties": {
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          },
+          "tests": {
+            "description": "Array of test specifiers to run. Each specifier contains 'targetName' and 'testIdentifier' fields. Use GetTestList action to discover available tests and their identifiers, then extract the 'targetName' and 'identifier' fields from the TestActionInfo results to construct TestActionSpecifier objects.",
+            "items": {
+              "properties": {
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                },
+                "testIdentifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "testIdentifier"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "tests"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "Active test plan name",
+            "type": "string"
+          },
+          "counts": {
+            "description": "Test execution counts",
+            "properties": {
+              "expectedFailures": {
+                "description": "Number of expected failures",
+                "type": "integer"
+              },
+              "failed": {
+                "description": "Number of failed tests",
+                "type": "integer"
+              },
+              "notRun": {
+                "description": "Number of tests not run",
+                "type": "integer"
+              },
+              "passed": {
+                "description": "Number of passed tests",
+                "type": "integer"
+              },
+              "skipped": {
+                "description": "Number of skipped tests",
+                "type": "integer"
+              },
+              "total": {
+                "description": "Total test count",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "total",
+              "passed",
+              "failed",
+              "skipped",
+              "expectedFailures",
+              "notRun"
+            ],
+            "type": "object"
+          },
+          "fullSummaryPath": {
+            "description": "A text file path containing all test results and complete issue details in textual form",
+            "type": "string"
+          },
+          "message": {
+            "description": "Additional information about truncation",
+            "type": "string"
+          },
+          "results": {
+            "description": "Results for each test (truncated at 100, failures shown first)",
+            "items": {
+              "properties": {
+                "displayName": {
+                  "description": "Human-readable test name",
+                  "type": "string"
+                },
+                "errors": {
+                  "description": "Error messages",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "identifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "Execution state",
+                  "type": "string"
+                },
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "identifier",
+                "displayName",
+                "state",
+                "errors"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "schemeName": {
+            "description": "Active scheme name",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Test execution summary",
+            "type": "string"
+          },
+          "totalResults": {
+            "description": "Total number of test results before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 results",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "summary",
+          "counts",
+          "results",
+          "schemeName",
+          "truncated",
+          "totalResults",
+          "fullSummaryPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetBuildLog",
+      "title": "Get Build Log",
+      "description": "Gets the log of the current or most recently finished build. You can choose which build log entries to include by specifying the severity of any issues emitted by the build task represented by the entry. You can also filter by message regex pattern or file glob pattern. The response also indicates whether the build is currently in progress.",
+      "inputSchema": {
+        "properties": {
+          "glob": {
+            "description": "Glob to filter the returned build log entries. Will match against the 'path' field of any emitted issues, as well as against the location of any build task.",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "Regex to filter the returned build log entries. Will match against the 'message' field of any emitted issues, as well as the task description, command line, and console output of any build tasks.",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Limit the output of build log entries to those that emitted issues of the specified severity or higher. Valid values in order of decreasing severity are 'error', 'warning', 'remark'. Defaults to 'error'.",
+            "enum": [
+              "remark",
+              "warning",
+              "error"
+            ],
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "buildIsRunning": {
+            "description": "Indicates whether the build is still running.",
+            "type": "boolean"
+          },
+          "buildLogEntries": {
+            "description": "The build log entries describing build commands that emitted issues",
+            "items": {
+              "properties": {
+                "buildTask": {
+                  "description": "The build task represented by the log entry",
+                  "type": "string"
+                },
+                "emittedIssues": {
+                  "description": "Any issues emitted by the build task represented by the log entry",
+                  "items": {
+                    "properties": {
+                      "line": {
+                        "description": "The line number where the issue was detected, if known",
+                        "type": "integer"
+                      },
+                      "message": {
+                        "description": "The message describing the issue",
+                        "type": "string"
+                      },
+                      "path": {
+                        "description": "The file path where the issue was detected, if any",
+                        "type": "string"
+                      },
+                      "severity": {
+                        "description": "The severity of issue (error, warning, remark)",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "line",
+                      "severity",
+                      "message"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "emittedIssues"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "buildResult": {
+            "description": "The message indicating the result of the build operation",
+            "type": "string"
+          },
+          "fullLogPath": {
+            "description": "Path of the full log in textual format, containing the complete command lines and any output from the build tasks",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional message with additional information about the search results",
+            "type": "string"
+          },
+          "totalFound": {
+            "description": "Total number of build log entries before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 issues",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "buildResult",
+          "buildLogEntries",
+          "buildIsRunning",
+          "truncated",
+          "totalFound",
+          "fullLogPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListNavigatorIssues",
+      "title": "List Workspace Issues",
+      "description": "Lists the currently known issues shown Xcode's Issue Navigator UI in the workspace. These issues include those that have been discovered since the last build, and also issues like package resolution problems and workspace configuration issues. You can filter the issues to include by file name, glob, or severity. Use this tool when you want to list all the users the user can see in the workspace UI.",
+      "inputSchema": {
+        "properties": {
+          "glob": {
+            "description": "Glob to filter the returned issues. Will match against the 'path' field.",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "Regex to filter the returned issues. Will match against the 'message' field.",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Limit the returned issues to those that have the specified severity or higher. Valid values in order of decreasing severity are 'error', 'warning', 'remark'. Defaults to 'error'.",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "issues": {
+            "description": "The list of current issues matching the input filters",
+            "items": {
+              "properties": {
+                "category": {
+                  "description": "The category of the issue, if known",
+                  "type": "string"
+                },
+                "line": {
+                  "description": "The line number where the issue was detected, if known",
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "The message describing the issue",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The file path where the issue was detected, if any",
+                  "type": "string"
+                },
+                "severity": {
+                  "description": "The severity of issue (error, warning, remark)",
+                  "type": "string"
+                },
+                "vitality": {
+                  "description": "Whether an issue from a previous build is known to still be relevant or whether something might have changed since it was emitted (for example if the source file has been edited and it isn't yet known whether that edit fixes the issue). Possible values: (fresh, stale)",
+                  "enum": [
+                    "fresh",
+                    "stale"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message",
+                "severity"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "message": {
+            "description": "Optional message with additional information about the search results",
+            "type": "string"
+          },
+          "totalFound": {
+            "description": "Total number of issues before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 issues",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "issues",
+          "truncated",
+          "totalFound"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RenderPreview",
+      "title": "RenderPreview",
+      "description": "Builds and renders a Preview and waits until a snapshot of the resulting UI is available.",
+      "inputSchema": {
+        "properties": {
+          "previewDefinitionIndexInFile": {
+            "description": "The zero based index of the #Preview macro or PreviewProvider struct definition in the source file counting from the top. Defaults to 0, i.e. the first one.",
+            "type": "integer"
+          },
+          "sourceFilePath": {
+            "description": "The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "The time in seconds to wait for the rendering of the preview to complete. Defaults to 120 seconds.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "sourceFilePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "error": {
+            "description": "An error that occurred during the preview attempt.",
+            "properties": {
+              "message": {
+                "description": "The error message with potential underlying errors included.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "type": "object"
+          },
+          "previewSnapshotPath": {
+            "description": "The path to the image snapshot of the requested preview.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RunAllTests",
+      "title": "Run All Tests",
+      "description": "Runs all tests from the active scheme's active test plan",
+      "inputSchema": {
+        "properties": {
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "Active test plan name",
+            "type": "string"
+          },
+          "counts": {
+            "description": "Test execution counts",
+            "properties": {
+              "expectedFailures": {
+                "description": "Number of expected failures",
+                "type": "integer"
+              },
+              "failed": {
+                "description": "Number of failed tests",
+                "type": "integer"
+              },
+              "notRun": {
+                "description": "Number of tests not run",
+                "type": "integer"
+              },
+              "passed": {
+                "description": "Number of passed tests",
+                "type": "integer"
+              },
+              "skipped": {
+                "description": "Number of skipped tests",
+                "type": "integer"
+              },
+              "total": {
+                "description": "Total test count",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "total",
+              "passed",
+              "failed",
+              "skipped",
+              "expectedFailures",
+              "notRun"
+            ],
+            "type": "object"
+          },
+          "fullSummaryPath": {
+            "description": "A text file path containing all test results and complete issue details in textual form",
+            "type": "string"
+          },
+          "message": {
+            "description": "Additional information about truncation",
+            "type": "string"
+          },
+          "results": {
+            "description": "Results for each test (truncated at 100, failures shown first)",
+            "items": {
+              "properties": {
+                "displayName": {
+                  "description": "Human-readable test name",
+                  "type": "string"
+                },
+                "errors": {
+                  "description": "Error messages",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "identifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "Execution state",
+                  "type": "string"
+                },
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "identifier",
+                "displayName",
+                "state",
+                "errors"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "schemeName": {
+            "description": "Active scheme name",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Test execution summary",
+            "type": "string"
+          },
+          "totalResults": {
+            "description": "Total number of test results before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 results",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "summary",
+          "counts",
+          "results",
+          "schemeName",
+          "truncated",
+          "totalResults",
+          "fullSummaryPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeUpdate",
+      "title": "Edit File",
+      "description": "Edits files in the Xcode project by replacing text content. Works on Xcode project structure paths, not filesystem paths. IMPORTANT: The tool will fail if filePath, oldString, or newString parameters are missing.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "REQUIRED: The path to the file to modify within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "newString": {
+            "description": "REQUIRED: The text to replace it with, must be different from oldString",
+            "type": "string"
+          },
+          "oldString": {
+            "description": "REQUIRED: The text to replace",
+            "type": "string"
+          },
+          "replaceAll": {
+            "description": "Replace all occurrences of oldString (default false)",
+            "type": "boolean"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "filePath",
+          "oldString",
+          "newString"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "editsApplied": {
+            "description": "Number of successful text replacements made",
+            "type": "integer"
+          },
+          "filePath": {
+            "description": "The path of the file that was edited",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional message with additional information about the edit results",
+            "type": "string"
+          },
+          "modifiedContentLength": {
+            "description": "Length of the file content after editing",
+            "type": "integer"
+          },
+          "originalContentLength": {
+            "description": "Length of the file content before editing",
+            "type": "integer"
+          },
+          "success": {
+            "description": "Whether the edit operation completed successfully",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "filePath",
+          "editsApplied",
+          "success",
+          "originalContentLength",
+          "modifiedContentLength"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeRead",
+      "title": "Read",
+      "description": "Reads the contents of a file within the Xcode project organization. Returns content in cat -n format with line numbers. Supports reading up to 600 lines by default with optional offset and limit parameters for large files.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The number of lines to read (only provide if the file is too large to read at once)",
+            "type": "integer"
+          },
+          "offset": {
+            "description": "The line number to start reading from (only provide if the file is too large to read at once)",
+            "type": "integer"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "filePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "content": {
+            "description": "The file contents formatted with line numbers (cat -n style)",
+            "type": "string"
+          },
+          "filePath": {
+            "description": "The project path that was read",
+            "type": "string"
+          },
+          "fileSize": {
+            "description": "Size of the file in bytes",
+            "type": "integer"
+          },
+          "linesRead": {
+            "description": "Number of lines actually read",
+            "type": "integer"
+          },
+          "startLine": {
+            "description": "The line number where reading started",
+            "type": "integer"
+          },
+          "totalLines": {
+            "description": "Total number of lines in the file",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "content",
+          "filePath",
+          "totalLines",
+          "linesRead",
+          "startLine",
+          "fileSize"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeRM",
+      "title": "Remove File",
+      "description": "Removes files and directories from the Xcode project structure and optionally deletes the underlying files from the filesystem.",
+      "inputSchema": {
+        "properties": {
+          "deleteFiles": {
+            "description": "Also move the underlying files to Trash (defaults to true)",
+            "type": "boolean"
+          },
+          "path": {
+            "description": "The project path to remove (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "recursive": {
+            "description": "Remove directories and their contents recursively",
+            "type": "boolean"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "path"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "message": {
+            "description": "Status message about the removal operation",
+            "type": "string"
+          },
+          "removedPath": {
+            "description": "The project path that was removed",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the removal operation was successful",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "removedPath",
+          "success",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListWindows",
+      "title": "List Windows",
+      "description": "Lists the current Xcode windows and their workspace information",
+      "inputSchema": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "message": {
+            "description": "Description of all open Xcode windows",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeRefreshCodeIssuesInFile",
+      "title": "XcodeRefreshCodeIssuesInFile",
+      "description": "Retrieves current compiler diagnostics (errors, warnings, notes) for a file in the Xcode project. Returns formatted diagnostic information including severity levels and messages.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "filePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "content": {
+            "description": "Formatted diagnostic output with severity levels and messages",
+            "type": "string"
+          },
+          "diagnosticsCount": {
+            "description": "Number of diagnostics found (errors, warnings, notes)",
+            "type": "integer"
+          },
+          "filePath": {
+            "description": "The project path that was checked for diagnostics",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the diagnostic retrieval completed successfully",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "filePath",
+          "diagnosticsCount",
+          "content",
+          "success"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeLS",
+      "title": "List Directory Contents",
+      "description": "Lists files and directories in the Xcode project structure at the specified path. Works on Xcode project organization, not filesystem structure.",
+      "inputSchema": {
+        "properties": {
+          "ignore": {
+            "description": "Skip files/folders matching these patterns",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "path": {
+            "description": "The project path to browse (e.g., 'ProjectName/Sources/')",
+            "type": "string"
+          },
+          "recursive": {
+            "description": "Recursively list all files (truncated to 100 lines). Default: true",
+            "type": "boolean"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "path"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "items": {
+            "description": "List of files and directories at the specified path",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "path": {
+            "description": "The resolved project path that was browsed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetTestList",
+      "title": "Get Test List",
+      "description": "Gets all available tests from the active scheme's active test plan. Results are limited to 100 tests. The complete list is written to fullTestListPath in grep-friendly format. Use grep with keys like TEST_TARGET, TEST_IDENTIFIER, or TEST_FILE_PATH to find specific tests.",
+      "inputSchema": {
+        "properties": {
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "The active test plan name",
+            "type": "string"
+          },
+          "counts": {
+            "description": "Aggregated test counts",
+            "properties": {
+              "disabled": {
+                "description": "Number of disabled tests",
+                "type": "integer"
+              },
+              "enabled": {
+                "description": "Number of enabled tests",
+                "type": "integer"
+              },
+              "total": {
+                "description": "Total test count",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "total",
+              "enabled",
+              "disabled"
+            ],
+            "type": "object"
+          },
+          "fullTestListPath": {
+            "description": "Path to file containing complete test list",
+            "type": "string"
+          },
+          "schemeName": {
+            "description": "The active scheme name",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Human-readable test list summary",
+            "type": "string"
+          },
+          "tests": {
+            "description": "List of tests limited to 100",
+            "items": {
+              "properties": {
+                "displayName": {
+                  "description": "Human readable test name",
+                  "type": "string"
+                },
+                "filePath": {
+                  "description": "Source file path",
+                  "type": "string"
+                },
+                "identifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                },
+                "isEnabled": {
+                  "description": "Whether the test is enabled in the test plan",
+                  "type": "boolean"
+                },
+                "lineNumber": {
+                  "description": "Line number in source file",
+                  "type": "integer"
+                },
+                "tags": {
+                  "description": "Swift Testing tags",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "identifier",
+                "displayName",
+                "isEnabled"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totalTests": {
+            "description": "Total number of tests before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether test list was truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "tests",
+          "schemeName",
+          "summary",
+          "counts",
+          "truncated",
+          "totalTests",
+          "fullTestListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeMV",
+      "title": "Move File",
+      "description": "Moves or renames files and directories in the project navigator with support for filesystem operations.",
+      "inputSchema": {
+        "properties": {
+          "destinationPath": {
+            "description": "Project navigator relative path for the destination (for move) or new name (for rename)",
+            "type": "string"
+          },
+          "operation": {
+            "description": "The type of move operation to perform",
+            "enum": [
+              "move",
+              "copy"
+            ],
+            "type": "string"
+          },
+          "overwriteExisting": {
+            "description": "Whether to overwrite existing files at the destination",
+            "type": "boolean"
+          },
+          "sourcePath": {
+            "description": "Project navigator relative path of the source item to move/rename",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "sourcePath",
+          "destinationPath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "destinationFinalPath": {
+            "description": "The final path of the moved/renamed item",
+            "type": "string"
+          },
+          "message": {
+            "description": "Result message describing the operation",
+            "type": "string"
+          },
+          "operation": {
+            "description": "The operation that was performed",
+            "type": "string"
+          },
+          "sourceOriginalPath": {
+            "description": "The original path of the source item",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the move/rename operation succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "operation",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeGlob",
+      "title": "Search Files",
+      "description": "Finds files in the Xcode project structure matching wildcard patterns. Works on Xcode project organization, not filesystem structure. Example patterns: '*.swift', '**/*.json', 'src/**/*.{swift,m}'. If no pattern is provided, defaults to '**/*' (all files).",
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Which project directory to search in (optional, defaults to root)",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "File matching pattern using wildcards (* ** ? [abc] {swift,m}). Examples: '*.swift', '**/*.json', 'src/**/*.{swift,m}'. Defaults to '**/*' if not provided.",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "matches": {
+            "description": "List of matching file paths in the project structure (truncated at 100), sorted by most recently modified first",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "message": {
+            "description": "Optional message with additional information about the search results",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "The pattern that was searched for",
+            "type": "string"
+          },
+          "searchPath": {
+            "description": "The project path that was searched",
+            "type": "string"
+          },
+          "totalFound": {
+            "description": "Total number of files found before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 files",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "matches",
+          "pattern",
+          "searchPath",
+          "truncated",
+          "totalFound"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeWrite",
+      "title": "Write File",
+      "description": "Creates or overwrites files with content in the Xcode project. Works on Xcode project structure paths, not filesystem paths. Automatically adds new files to the project structure. Both filePath and content parameters are required.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "REQUIRED: The content to write to the file",
+            "type": "string"
+          },
+          "filePath": {
+            "description": "REQUIRED: The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier (required)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "filePath",
+          "content"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "absolutePath": {
+            "description": "The absolute file system path of the written file",
+            "type": "string"
+          },
+          "bytesWritten": {
+            "description": "Number of bytes written to the file",
+            "type": "integer"
+          },
+          "filePath": {
+            "description": "The project path that was written",
+            "type": "string"
+          },
+          "linesWritten": {
+            "description": "Number of lines written to the file",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Result message describing the write operation",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the file write operation succeeded",
+            "type": "boolean"
+          },
+          "wasExistingFile": {
+            "description": "Whether the file existed before writing",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "filePath",
+          "bytesWritten",
+          "linesWritten",
+          "message",
+          "wasExistingFile"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "ExecuteSnippet",
+      "title": "ExecuteSnippet",
+      "description": "Builds and runs a snippet of code in the context of a specific file and waits until results are available. This tool is available for source files in targets that build applications, frameworks, libraries, or command line executables. The output consists of the console output generated by the `print` statements contained in the provided snippet.",
+      "inputSchema": {
+        "properties": {
+          "codeSnippet": {
+            "description": "The code snippet that should be executed in the context of the specified file.",
+            "type": "string"
+          },
+          "sourceFilePath": {
+            "description": "The path to a Swift source file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift') whose context the code snippet will have access to (including `fileprivate` declarations).",
+            "type": "string"
+          },
+          "tabIdentifier": {
+            "description": "The workspace tab identifier.",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "The time in seconds to wait for the execution of the snippet to complete. Defaults to 120 seconds.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tabIdentifier",
+          "codeSnippet",
+          "sourceFilePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "error": {
+            "description": "An error that occurred during the snippet execution attempt.",
+            "properties": {
+              "message": {
+                "description": "The error message with potential underlying errors included.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "type": "object"
+          },
+          "executionResults": {
+            "description": "The console output generated by the `print` statements contained in the provided snippet.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    }
+  ]
+}
