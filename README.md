@@ -2,6 +2,8 @@
 
 A comprehensive reference for the Xcode MCP Server aka Xcode Tools. These tools enable AI assistants to interact with Xcode workspaces — managing files, building projects, running tests, rendering previews, and more.
 
+> Reflects **Xcode 27 beta 1**.
+
 <p align="center">
   <img src=".github/screenshot.png" width="60%"/>
 </p>
