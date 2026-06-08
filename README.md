@@ -16,7 +16,7 @@ A comprehensive reference for the Xcode MCP Server aka Xcode Tools. These tools 
 
 ## Prerequisites
 
-- Xcode 26.3+ installed and running with an open workspace
+- Xcode 27.0+ installed and running with an open workspace
 - MCP server configured with Xcode integration
 
 > **Note:** Most tools require a `tabIdentifier` parameter that identifies which Xcode workspace tab to operate on.
