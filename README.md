@@ -43,7 +43,7 @@ Verify with `claude mcp list` or `codex mcp list`.
 
 ## Xcode 27 beta 4 changes
 
-- **Disabled:** `DocumentationSearch` — absent from `tools/list`; calling it directly returns "Tool 'DocumentationSearch' is not enabled." Still referenced behind a `MCPTool_DocumentationSearch` flag in Xcode's agent prompt template, so this looks like a feature-flag rollback, not a removal
+- **Hidden but functional:** [`DocumentationSearch`](#documentationsearch) — no longer appears in `tools/list`, but still works when called directly by name; see the note in its section for details
 - **Added:** [`DeviceInteractionStartWorkspaceSession`](#deviceinteractionstartworkspacesession) — workspace-bound device session, needed for `DeviceInteractionInstallAndRun`
 - **Changed:** [`DeviceInteractionStartSession`](#deviceinteractionstartsession) no longer takes `tabIdentifier` (it doesn't need a workspace) and now requires `deviceIdentifier`; use the new `DeviceInteractionStartWorkspaceSession` for install & run flows
 - **Changed:** `tabIdentifier` is no longer required on any tool — omit it when only one workspace tab is open
@@ -116,6 +116,8 @@ Verify with `claude mcp list` or `codex mcp list`.
   - [LocalizationPlanner](#localizationplanner) 🆕
 - **[Preview](#preview)**
   - [RenderPreview](#renderpreview)
+- **[Documentation](#documentation)**
+  - [DocumentationSearch](#documentationsearch) ⚠️
 
 ---
 
@@ -998,6 +1000,26 @@ RenderPreview(
   tabIdentifier: "...",
   sourceFilePath: "MyApp/Sources/Views/ProfileView.swift"
 )
+```
+
+---
+
+## Documentation
+
+### DocumentationSearch ⚠️
+
+> **Status in Xcode 27 beta 4:** absent from `tools/list` — a standard MCP client won't discover it through normal enumeration. It's still implemented and works when called directly by name: it's gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads), and returns `Tool 'DocumentationSearch' is not enabled.` until that asset finishes downloading/indexing. Once ready, direct calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template) and can call it once the asset is ready.
+
+Searches Apple Developer Documentation using semantic matching. Useful for looking up APIs, frameworks, and usage patterns.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | Yes | Search query |
+| `frameworks` | string[] | No | Limit search to specific frameworks. Searches all if omitted |
+
+**Example:**
+```
+DocumentationSearch(query: "URLSession background download")
 ```
 
 ## Author

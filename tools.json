@@ -458,6 +458,74 @@
       }
     },
     {
+      "name": "DocumentationSearch",
+      "title": "DocumentationSearch",
+      "description": "Searches Apple Developer Documentation using semantic matching.",
+      "inputSchema": {
+        "properties": {
+          "frameworks": {
+            "type": "array",
+            "description": "Framework(s) to search in. Searches all frameworks if not specified.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "query": {
+            "type": "string",
+            "description": "The search query"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "documents": {
+            "type": "array",
+            "description": "The documents most relevant to the search query",
+            "items": {
+              "properties": {
+                "contents": {
+                  "type": "string",
+                  "description": "The document contents"
+                },
+                "kind": {
+                  "type": "string",
+                  "description": "The kind of document"
+                },
+                "score": {
+                  "type": "number",
+                  "description": "The matching score of the document"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "The document title"
+                },
+                "uri": {
+                  "type": "string",
+                  "description": "The document uri"
+                }
+              },
+              "required": [
+                "title",
+                "uri",
+                "contents",
+                "score",
+                "kind"
+              ],
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "documents"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "GetBuildLog",
       "title": "Get Build Log",
       "description": "Gets the log of the current or most recently finished build. You can choose which build log entries to include by specifying the severity of any issues emitted by the build task represented by the entry. You can also filter by message regex pattern or file glob pattern. The response also indicates whether the build is currently in progress.",
