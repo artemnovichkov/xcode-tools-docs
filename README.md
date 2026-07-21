@@ -43,7 +43,7 @@ Verify with `claude mcp list` or `codex mcp list`.
 
 ## Xcode 27 beta 4 changes
 
-- **Removed:** `DocumentationSearch`
+- **Disabled:** `DocumentationSearch` — absent from `tools/list`; calling it directly returns "Tool 'DocumentationSearch' is not enabled." Still referenced behind a `MCPTool_DocumentationSearch` flag in Xcode's agent prompt template, so this looks like a feature-flag rollback, not a removal
 - **Added:** [`DeviceInteractionStartWorkspaceSession`](#deviceinteractionstartworkspacesession) — workspace-bound device session, needed for `DeviceInteractionInstallAndRun`
 - **Changed:** [`DeviceInteractionStartSession`](#deviceinteractionstartsession) no longer takes `tabIdentifier` (it doesn't need a workspace) and now requires `deviceIdentifier`; use the new `DeviceInteractionStartWorkspaceSession` for install & run flows
 - **Changed:** `tabIdentifier` is no longer required on any tool — omit it when only one workspace tab is open
