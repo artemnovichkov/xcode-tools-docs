@@ -2,7 +2,7 @@
   "tools": [
     {
       "name": "AddEntitlement",
-      "title": "AddEntitlement",
+      "title": "Add Entitlement",
       "description": "Add a new entitlement to the project's entitlements file.\n\nMost Apple APIs do NOT require an entitlement. Only use this tool when a\nfeature requires a code-signing entitlement. These are things like access\nto protected hardware, sandboxed data stores shared between apps, paid\ntransaction processing, or privileged inter-process communication.\n\nDo NOT use this tool or add an entitlement for:\n- Adding UI components or using standard frameworks (SwiftUI, UIKit, MapKit, AVFoundation, CoreLocation, etc.)\n- Privacy usage descriptions — those are Info.plist keys, not entitlements. You should use the AddInfoPlist tool.\n- General feature development that doesn't involve a restricted system capability\n\nWhen in doubt, do NOT call this tool or add an entitlement. If you run\ninto debugging issues after adopting a new API — such as failures\nconnecting to system XPC services — you can add the entitlement then.\n\nParameters:\n    - targetName: The name of the Xcode target to add the entitlement to. Use another tool to discover the target names if you don't already know them.\n    - entitlementKey: The entitlement key you want to add.\n    - entitlementValueType: The type of the value — 'bool', 'string', 'int', 'stringArray', or 'dictionary'.\n    - entitlementValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n    - entitlementValueItems: Array of strings (only for stringArray type).\n    - entitlementDictionaryItems: JSON-encoded dictionary (only for dictionary type).\n\nNote: It is IMPORTANT that you do not edit the entitlement file directly unless told to. ALWAYS call this tool if you need to change the entitlement file.",
       "inputSchema": {
         "properties": {
@@ -36,6 +36,10 @@
               "dictionary"
             ]
           },
+          "projectPath": {
+            "type": "string",
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise."
+          },
           "tabIdentifier": {
             "type": "string",
             "description": "The workspace tab identifier."
@@ -46,7 +50,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "targetName",
           "entitlementKey",
           "entitlementValueType"
@@ -72,7 +75,7 @@
     },
     {
       "name": "AddInfoPlist",
-      "title": "AddInfoPlist",
+      "title": "Add Info.plist Entry",
       "description": "Add or update an Info.plist key in the project.\n\nUse this tool for app configuration metadata such as:\n- Privacy usage descriptions (e.g. NSCameraUsageDescription, NSLocationWhenInUseUsageDescription)\n- App Transport Security settings\n- Supported interface orientations\n- URL schemes and document types\n- Background modes\n- Bundle display name, version, or other app metadata\n\nThis is NOT for entitlements. If you need a restricted system capability\ngated by code signing (like Push Notifications, App Groups, or iCloud),\nuse the AddEntitlement tool instead.\n\nParameters:\n- targetName: The name of the Xcode target to add the Info.plist key to. Use another tool to discover the target names if you don't already know them.\n- infoPlistKey: The key for the info.plist value you want to add.\n- infoPlistValueType: The type of the value — 'bool', 'string', 'int', 'stringArray', or 'dictionaryArray'.\n- infoPlistValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n- infoPlistValueItems: Array of strings (only for stringArray type).\n- infoPlistDictionaryItems: JSON-encoded array of dictionaries (only for dictionaryArray type).\n\nIMPORTANT: Do NOT modify the Info.plist file directly. Always use this tool\nto add or edit Info.plist keys, even if the project has GENERATE_INFOPLIST_FILE enabled.",
       "inputSchema": {
         "properties": {
@@ -106,9 +109,13 @@
               "dictionaryArray"
             ]
           },
+          "projectPath": {
+            "type": "string",
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise."
+          },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "targetName": {
             "type": "string",
@@ -116,7 +123,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "targetName",
           "infoPlistKey",
           "infoPlistValueType"
@@ -152,12 +158,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -215,12 +219,12 @@
     {
       "name": "DeviceInteractionEndSession",
       "title": "End Device Interaction Session",
-      "description": "Closes previous device session created in DeviceInteractionStartSession.\n        \nCall this action once you have finished interacting with a device.\nKeeping a device interaction session alive is expensive and affects the user-facing UI.\nIt is crucial to close the session when not in use.",
+      "description": "Closes previous device session created in DeviceInteractionStartSession or DeviceInteractionStartWorkspaceSession.\n        \nCall this action once you have finished interacting with a device.\nKeeping a device interaction session alive is expensive and affects the user-facing UI.\nIt is crucial to close the session when not in use.",
       "inputSchema": {
         "properties": {
           "interactionSessionKey": {
             "type": "string",
-            "description": "Device Interaction session to close. Taken from Start Device Interaction Session"
+            "description": "Device Interaction session to close. Taken from DeviceInteractionStartSession or DeviceInteractionStartWorkspaceSession"
           }
         },
         "required": [
@@ -260,15 +264,14 @@
           },
           "interactionSessionKey": {
             "type": "string",
-            "description": "Device Interaction session identifier that initiates this call. Taken from Start Device Interaction Session"
+            "description": "Device Interaction session identifier that initiates this call. Taken from DeviceInteractionStartWorkspaceSession"
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "interactionSessionKey"
         ],
         "type": "object"
@@ -289,7 +292,61 @@
     {
       "name": "DeviceInteractionStartSession",
       "title": "Start Device Interaction Session",
-      "description": "Prepares a runtime for iOS interaction. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing feature development.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nDo NOT call this if the application you are working on cannot be built and installed on an iOS device.",
+      "description": "Prepares a runtime for iOS interaction WITHOUT a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing work.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nThis session cannot build or install the project. If you need to install&run the app you are\nworking on, use DeviceInteractionStartWorkspaceSession instead.",
+      "inputSchema": {
+        "properties": {
+          "deviceIdentifier": {
+            "type": "string",
+            "description": "The UUID/ECID/name/OS version/type of the device to perform interaction. Accepts any values and tries to match the best candidate."
+          },
+          "sessionIdentifier": {
+            "type": "string",
+            "description": "Unique human-friendly identifier for this session (e.g. \"Verify Login Flow\"). Used in logs and UI - use Title Case."
+          }
+        },
+        "required": [
+          "deviceIdentifier",
+          "sessionIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "deviceIsSimulator": {
+            "type": "boolean",
+            "description": "true if the device for this session is a simulator, otherwise false"
+          },
+          "deviceUUID": {
+            "type": "string",
+            "description": "UUID of the device to be used for the interaction session"
+          },
+          "interactionSessionKey": {
+            "type": "string",
+            "description": "A secret key to identify the interaction session"
+          },
+          "skillToTrigger": {
+            "type": "string",
+            "description": "The name of the skill that will handle the next step(s)"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Notes about the session and guidance on next steps for a caller"
+          }
+        },
+        "required": [
+          "summary",
+          "skillToTrigger",
+          "interactionSessionKey",
+          "deviceUUID",
+          "deviceIsSimulator"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DeviceInteractionStartWorkspaceSession",
+      "title": "Start Device Interaction Workspace Session",
+      "description": "Prepares a runtime for iOS interaction WITH a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing feature development.\nBecause it is bound to the workspace, it only offers devices the current scheme can run on, and it\nenables installing&running the project via DeviceInteractionInstallAndRun.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nDo NOT call this if the application you are working on doesn't have to be built and installed on a device.",
       "inputSchema": {
         "properties": {
           "deviceIdentifier": {
@@ -302,11 +359,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "sessionIdentifier"
         ],
         "type": "object"
@@ -350,9 +406,13 @@
       "description": "Synthesizes device events (tap, swipe, type, etc.) on a physical device or simulator\nand captures the resulting state.\n\nThis action provides a unified interface for device interaction. After executing the\nspecified interaction command, it captures a screenshot and UI hierarchy, returning\npaths to both files.\nUse this to:\n- Tap UI elements at specific coordinates\n- Swipe/scroll through content\n- Type text into fields\n- Press hardware buttons\n- Capture current device state (screenshot + hierarchy)\n- Change device orientation\n\nAlways use positions based on the most recent hierarchy dump. Never try to guess positions from a screenshot only.",
       "inputSchema": {
         "properties": {
+          "activationBundleId": {
+            "type": "string",
+            "description": "Bundle identifier of the app to activate before any interactions"
+          },
           "interactSessionKey": {
             "type": "string",
-            "description": "Device Interaction session key to work with. Taken from Start Device Interaction Session"
+            "description": "Device Interaction session key to work with. Taken from DeviceInteractionStartSession or DeviceInteractionStartWorkspaceSession"
           },
           "interactionCommand": {
             "type": "string",
@@ -368,7 +428,7 @@
         "properties": {
           "applicationState": {
             "type": "string",
-            "description": "State of the run application: NotRun, Running, Stopped, Crashed, Disconnected."
+            "description": "State of the run application: NotRun, Running, Stopped, Crashed, Disconnected, Hanging, RunningInBackground."
           },
           "hierarchyPath": {
             "type": "string",
@@ -398,74 +458,6 @@
       }
     },
     {
-      "name": "DocumentationSearch",
-      "title": "DocumentationSearch",
-      "description": "Searches Apple Developer Documentation using semantic matching.",
-      "inputSchema": {
-        "properties": {
-          "frameworks": {
-            "type": "array",
-            "description": "Framework(s) to search in. Searches all frameworks if not specified.",
-            "items": {
-              "type": "string"
-            }
-          },
-          "query": {
-            "type": "string",
-            "description": "The search query"
-          }
-        },
-        "required": [
-          "query"
-        ],
-        "type": "object"
-      },
-      "outputSchema": {
-        "properties": {
-          "documents": {
-            "type": "array",
-            "description": "The documents most relevant to the search query",
-            "items": {
-              "properties": {
-                "contents": {
-                  "type": "string",
-                  "description": "The document contents"
-                },
-                "kind": {
-                  "type": "string",
-                  "description": "The kind of document"
-                },
-                "score": {
-                  "type": "number",
-                  "description": "The matching score of the document"
-                },
-                "title": {
-                  "type": "string",
-                  "description": "The document title"
-                },
-                "uri": {
-                  "type": "string",
-                  "description": "The document uri"
-                }
-              },
-              "required": [
-                "title",
-                "uri",
-                "contents",
-                "score",
-                "kind"
-              ],
-              "type": "object"
-            }
-          }
-        },
-        "required": [
-          "documents"
-        ],
-        "type": "object"
-      }
-    },
-    {
       "name": "GetBuildLog",
       "title": "Get Build Log",
       "description": "Gets the log of the current or most recently finished build. You can choose which build log entries to include by specifying the severity of any issues emitted by the build task represented by the entry. You can also filter by message regex pattern or file glob pattern. The response also indicates whether the build is currently in progress.",
@@ -490,12 +482,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -584,7 +574,7 @@
     },
     {
       "name": "GetConsoleOutput",
-      "title": "GetConsoleOutput",
+      "title": "Get Console Output",
       "description": "Retrieves console output (stdout, stderr, OSLog) from a running or completed app launch session. Supports regex filtering, severity filtering, and context extraction. Use this to analyze app logs, debug issues, find errors, or understand app behavior.",
       "inputSchema": {
         "properties": {
@@ -622,16 +612,14 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "tailLimit": {
             "type": "integer",
             "description": "Maximum number of lines to return from the END of output (tail behavior). Returns the last N lines. Default: 500."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -786,11 +774,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "signature_name"
         ],
         "type": "object"
@@ -864,11 +851,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "app_version",
           "signature_name",
           "diagnostic_type"
@@ -920,7 +906,7 @@
     },
     {
       "name": "GetFileCompilerFlags",
-      "title": "GetFileCompilerFlags",
+      "title": "Get File Compiler Flags",
       "description": "Gets the additional per-file compiler flags for a single source file in a specific Xcode target — the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources. Returns an empty string when the file is a member of the target with no flags set. Use UpdateFileCompilerFlags to modify flags.\n\nNote: Per-file compiler flags are uncommon — most targets configure compilation through target build settings instead. Use this tool to inspect existing per-file flags (e.g. when checking why one file in a target compiles differently from its peers, such as adopting `-fbounds-safety` for a single file).\n\nNote about Swift: Values shown for `.swift` files may not actually affect builds because the unit of compilation for Swift is a module. Prefer OTHER_SWIFT_FLAGS at the target level.",
       "inputSchema": {
         "properties": {
@@ -930,7 +916,7 @@
           },
           "projectPath": {
             "type": "string",
-            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise. An absolute or workspace-relative filesystem path is also accepted as a fallback."
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise."
           },
           "tabIdentifier": {
             "type": "string",
@@ -942,7 +928,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "targetName",
           "filePath"
         ],
@@ -981,10 +966,14 @@
     },
     {
       "name": "GetTargetBuildSettings",
-      "title": "GetTargetBuildSettings",
+      "title": "Get Target Build Settings",
       "description": "Get all the Xcode build setting for a specified Xcode project target.\nAlways use this tool to get the build settings for a target.\nOnly show the target value for each build setting if the user explicitly requests.\n\nIMPORTANT: Do NOT try to parse the project.pbxproj file directly.\"",
       "inputSchema": {
         "properties": {
+          "projectPath": {
+            "type": "string",
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise."
+          },
           "tabIdentifier": {
             "type": "string",
             "description": "The workspace tab identifier."
@@ -995,7 +984,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "targetName"
         ],
         "type": "object"
@@ -1029,12 +1017,10 @@
         "properties": {
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -1173,12 +1159,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -1241,11 +1225,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "diagnostic_type"
         ],
         "type": "object"
@@ -1306,7 +1289,7 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "timeout": {
             "type": "integer",
@@ -1314,7 +1297,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "command"
         ],
         "type": "object"
@@ -1354,7 +1336,7 @@
         "properties": {
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "targetLocaleIdentifier": {
             "type": "string",
@@ -1362,7 +1344,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "targetLocaleIdentifier"
         ],
         "type": "object"
@@ -1400,6 +1381,10 @@
         "properties": {
           "previewCanvasControlOverrides": {
             "properties": {
+              "groupItemIndex": {
+                "type": "integer",
+                "description": "A zero-based group item index to render for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. This parameter is only meaningful for previews that return a list of items in the `groupItemIndexes` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no index is provided and if the preview has a group item control, then a preview of the first group item is rendered. This parameter is ignored for previews that don't have an `arguments:` parameter."
+              },
               "timelineIndex": {
                 "type": "integer",
                 "description": "A zero-based timestop index to render for previews that vary across a timeline, such as a Widget or a Live Activity. This index represents a sequence number rather than a specific clock time. This parameter is only meaningful for previews that return a list of indexes in the `timelineIndexes` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no index is provided, the first preview in the timeline is rendered. This parameter is ignored for previews that don't have a timeline. "
@@ -1431,7 +1416,7 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "timeout": {
             "type": "integer",
@@ -1439,7 +1424,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "sourceFilePath"
         ],
         "type": "object"
@@ -1466,8 +1450,34 @@
             "type": "string",
             "description": "The path to the image snapshot of the requested preview."
           },
+          "renderedDestination": {
+            "properties": {
+              "deviceModelName": {
+                "type": "string",
+                "description": "Display name of the device model that the preview was rendered for (e.g. “iPhone 15 Pro”, “iPad Pro (11-inch) (2nd generation)”, “My Mac”). Omitted if not known."
+              },
+              "platformName": {
+                "type": "string",
+                "description": "Display name of the platform that the preview was rendered for (e.g. “iOS Simulator”, “macOS”). Omitted if not known."
+              },
+              "systemVersion": {
+                "type": "string",
+                "description": "Operating system version that the preview was rendered for, in major.minor[.patch] form (e.g. “17.2”). Omitted if not known."
+              }
+            },
+            "required": [],
+            "type": "object",
+            "description": "Describes the run destination that the preview was actually rendered against (e.g. which simulator). May differ from the workspace's currently-selected run destination if the pipeline picked a different one for this preview. Omitted if the destination could not be determined."
+          },
           "supportedCanvasControlOverrides": {
             "properties": {
+              "groupItems": {
+                "type": "array",
+                "description": "List of supported group items for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. The value of the `index` field of one of these items can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` input structure to choose a group item to render. Omitted if the preview doesn't have a group item control.",
+                "items": {
+                  "type": "integer"
+                }
+              },
               "timelineIndexes": {
                 "type": "array",
                 "description": "List of supported timeline indexes for previews that vary across a timeline, such as Widgets or Live Activities. The indexes represents sequence numbers rather than specific times. Omitted if the preview doesn't have a timeline control.",
@@ -1511,12 +1521,10 @@
         "properties": {
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -1649,7 +1657,7 @@
     },
     {
       "name": "RunCodeSnippet",
-      "title": "RunCodeSnippet",
+      "title": "Run Code Snippet",
       "description": "Builds and runs a snippet of code in the context of a specific file and waits until results are available. This tool is available for source files in targets that build applications, frameworks, libraries, or command line executables. The output consists of the console output generated by the `print` statements contained in the provided snippet.",
       "inputSchema": {
         "properties": {
@@ -1675,7 +1683,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "codeSnippet",
           "sourceFilePath",
           "purpose"
@@ -1731,12 +1738,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -1807,7 +1812,7 @@
         "properties": {
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "tests": {
             "type": "array",
@@ -1832,7 +1837,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "tests"
         ],
         "type": "object"
@@ -1973,12 +1977,10 @@
         "properties": {
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -2014,7 +2016,7 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "targetLocaleIdentifier": {
             "type": "string",
@@ -2022,7 +2024,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "filePath",
           "stringKey",
           "targetLocaleIdentifier"
@@ -2052,7 +2053,7 @@
           },
           "relevantPluralCases": {
             "type": "array",
-            "description": "If the string contains numerical format specifiers, this lists the relevant plural cases for the target locale (e.g., ['zero', 'one', 'other']). When empty, this string doesn't require any pluralization.",
+            "description": "If the string contains numerical format specifiers, this lists the relevant plural cases for the target locale (e.g., ['zero', 'one', 'other']). Absent when this string doesn't require any pluralization.",
             "items": {
               "type": "string"
             }
@@ -2066,6 +2067,13 @@
             "description": "Similar strings found in other String Catalogs in the workspace, useful for understanding translation patterns. Keep your translation similar to these strings and learn terminology and formality used in this project.",
             "items": {
               "type": "object"
+            }
+          },
+          "sourcePluralCasesToAdd": {
+            "type": "array",
+            "description": "Plural cases for the SOURCE locale that you should add BEFORE translating the target. Absent when the source is already plural-varied or when no pluralization is needed.",
+            "items": {
+              "type": "string"
             }
           },
           "sourceValues": {
@@ -2112,7 +2120,7 @@
           },
           "usageDataUnavailable": {
             "type": "string",
-            "description": "Informational message when usage data cannot be retrieved. Contains guidance on how to proceed (e.g., build project). Null when usage data is successfully retrieved."
+            "description": "Informational message when usage data cannot be retrieved. Contains guidance on how to proceed (e.g., build project). Absent when usage data is successfully retrieved."
           },
           "usageLocations": {
             "type": "array",
@@ -2125,7 +2133,6 @@
         "required": [
           "sourceValues",
           "shouldTranslate",
-          "relevantPluralCases",
           "translations",
           "usageLocations",
           "similarStrings",
@@ -2157,7 +2164,7 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "targetLocaleIdentifier": {
             "type": "string",
@@ -2258,7 +2265,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "filePath",
           "stringKey",
           "targetLocaleIdentifier"
@@ -2307,7 +2313,7 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "targetLocaleIdentifier": {
             "type": "string",
@@ -2315,7 +2321,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "filePath",
           "targetLocaleIdentifier"
         ],
@@ -2375,7 +2380,7 @@
     },
     {
       "name": "UpdateFileCompilerFlags",
-      "title": "UpdateFileCompilerFlags",
+      "title": "Update File Compiler Flags",
       "description": "Updates, appends or deletes the additional per-file compiler flags for a single source file in a specific Xcode target — the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources.\n\nNote: Per-file compiler flags should never be used when target build settings would suffice. Only use per-file compiler flags sparingly, when adding a flag to a specific file is absolutely required and is the only way to solve a problem (e.g. incrementally adopting `-fbounds-safety` by applying it to a single file only). Prefer UpdateTargetBuildSetting in any other case.\n\nAlways use this tool to update per-file compiler flags — do not edit project.pbxproj directly.\n\nNote about Swift: Per-file compiler flags on Swift sources are typically ignored by the build system because the unit of compilation for Swift is a module. The value still round-trips through the project, but it may not affect builds. Prefer OTHER_SWIFT_FLAGS at the target level (use UpdateTargetBuildSetting).",
       "inputSchema": {
         "properties": {
@@ -2393,7 +2398,7 @@
           },
           "projectPath": {
             "type": "string",
-            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise. An absolute or workspace-relative filesystem path is also accepted as a fallback."
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise."
           },
           "tabIdentifier": {
             "type": "string",
@@ -2405,7 +2410,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "targetName",
           "filePath"
         ],
@@ -2449,7 +2453,7 @@
     },
     {
       "name": "UpdateTargetBuildSetting",
-      "title": "UpdateTargetBuildSetting",
+      "title": "Update Target Build Setting",
       "description": "Updates, appends or deletes the named build setting for the specified Xcode project target.\nAlways use this tool to update/change the build settings for a target.\nIf you need to get build settings, always use the GetTargetBuildSettings tool.\n\nIMPORTANT: Do NOT try to modify the project.pbxproj file directly.\nIMPORTANT: Do NOT try to read the project.pbxproj file directly; use the GetTargetBuildSettings tool instead.\"",
       "inputSchema": {
         "properties": {
@@ -2465,6 +2469,10 @@
             "type": "string",
             "description": "The value to be added to build settings.\nDo not convert \"NO\" values to \"false\".\nTo delete the build setting instead, just skip this property."
           },
+          "projectPath": {
+            "type": "string",
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise."
+          },
           "tabIdentifier": {
             "type": "string",
             "description": "The workspace tab identifier."
@@ -2475,7 +2483,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "targetName",
           "buildSettingName"
         ],
@@ -2511,12 +2518,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "Identifier for the workspace tab"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -2591,12 +2596,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -2703,7 +2706,7 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           },
           "type": {
             "type": "string",
@@ -2711,7 +2714,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "pattern"
         ],
         "type": "object"
@@ -2786,11 +2788,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "path"
         ],
         "type": "object"
@@ -2847,12 +2848,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -2934,9 +2933,7 @@
             "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -3069,9 +3066,7 @@
             "description": "The workspace tab identifier."
           }
         },
-        "required": [
-          "tabIdentifier"
-        ],
+        "required": [],
         "type": "object"
       },
       "outputSchema": {
@@ -3200,11 +3195,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "sourcePath",
           "destinationPath"
         ],
@@ -3253,11 +3247,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "directoryPath"
         ],
         "type": "object"
@@ -3304,11 +3297,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "path"
         ],
         "type": "object"
@@ -3356,11 +3348,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "filePath"
         ],
         "type": "object"
@@ -3419,11 +3410,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "filePath"
         ],
         "type": "object"
@@ -3472,7 +3462,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "displayTitle"
         ],
         "type": "object"
@@ -3516,7 +3505,6 @@
           }
         },
         "required": [
-          "tabIdentifier",
           "schemeName"
         ],
         "type": "object"
@@ -3530,6 +3518,10 @@
           "activeSchemeName": {
             "type": "string",
             "description": "The name of the scheme that is now active."
+          },
+          "activeTestPlanName": {
+            "type": "string",
+            "description": "The name of the new scheme's active test plan, or null if the scheme does not use test plans. Each scheme has its own active test plan, so switching schemes changes which plan testing and build-for-testing operate on. Use XcodeListTestPlans / XcodeSwitchTestPlan to inspect or change it."
           },
           "message": {
             "type": "string",
@@ -3567,11 +3559,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "filePath",
           "oldString",
           "newString"
@@ -3631,11 +3622,10 @@
           },
           "tabIdentifier": {
             "type": "string",
-            "description": "The workspace tab identifier (required)"
+            "description": "The workspace tab identifier."
           }
         },
         "required": [
-          "tabIdentifier",
           "filePath",
           "content"
         ],
