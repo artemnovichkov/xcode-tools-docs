@@ -594,7 +594,6 @@
                       }
                     },
                     "required": [
-                      "line",
                       "severity",
                       "message"
                     ],
@@ -1348,7 +1347,7 @@
     {
       "name": "InvokeDebuggerCommand",
       "title": "Invoke a Debugger Command",
-      "description": "Sends an lldb command to Xcode's active debugging session and returns the output.\nThe process must already be running with the debugger attached. You can use the\nRunProject tool with attachDebugger=true, if it isn't running and debugged already.\n\nSend any lldb command: 'bt', 'po variable', 'breakpoint set -n main', 'continue',\n'thread step-over', 'frame variable', etc. The command runs in the same lldb session\nas Xcode's debug console, so the agent and Xcode UI share the same debugging state.",
+      "description": "Sends an lldb command to Xcode's active debugging session and returns the output.\nThe process must already be running with the debugger attached. You can use the\nRunProject tool with attachDebugger=true, if it isn't running and debugged already.\n\nSend any lldb command: 'bt', 'po variable', 'breakpoint set -n main', 'continue',\n'thread step-over', 'frame variable', etc. The command runs in the same lldb session\nas Xcode's debug console, so the agent and Xcode UI share the same debugging state.\n\nWhen you start using a debug session, you should call 'process status' to determine\nwhether the process is stopped or not, before calling any commands that require\nthe process to be stopped (like expressions). Do this unless you're already confident\nabout the running state.",
       "inputSchema": {
         "properties": {
           "command": {
@@ -1498,6 +1497,10 @@
       },
       "outputSchema": {
         "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The display name of the rendered preview, matching the title shown for it in Xcode’s canvas tab. For a named `#Preview(\"Some Name\")` this is the given name; for an unnamed `#Preview` it is derived from the file name; for a `PreviewProvider` it is derived from the type name."
+          },
           "errors": {
             "type": "array",
             "description": "Any errors that occurred during the preview attempt (such as input validation failures).",
@@ -1536,6 +1539,10 @@
             "required": [],
             "type": "object",
             "description": "Describes the run destination that the preview was actually rendered against (e.g. which simulator). May differ from the workspace's currently-selected run destination if the pipeline picked a different one for this preview. Omitted if the destination could not be determined."
+          },
+          "sourceLineNumber": {
+            "type": "integer",
+            "description": "The 1-based line number in the source file where the rendered preview is defined. Useful for disambiguating a preview from others that share the same display name in the same file (which Xcode’s canvas shows as a “Line N” subtitle)."
           },
           "supportedCanvasControlOverrides": {
             "properties": {
@@ -3205,6 +3212,338 @@
       }
     },
     {
+      "name": "XcodeListTargets",
+      "title": "List Targets",
+      "description": "Lists targets in the current Xcode workspace, optionally scoped to a single project. Each entry\nincludes the target's name, the project that contains it, its product type (e.g. application,\nframework, unit-test bundle), and role flags (isTestTarget, supportsHostingTests, isAppExtension,\nisAggregate). Hidden synthetic blueprints and Swift package products are not listed. \nPass the containingProjectPath value back to GetTargetBuildSettings, UpdateTargetBuildSetting,\nor other target-aware tools to operate on a specific project. Inline results are\ncapped at 100 entries; the complete list is always written to fullTargetListPath in\ngrep-friendly format with keys like TARGET_NAME, CONTAINING_PROJECT, PRODUCT_TYPE_IDENTIFIER,\nPRODUCT_TYPE_NAME, IS_TEST_TARGET, SUPPORTS_HOSTING_TESTS, IS_APP_EXTENSION, IS_AGGREGATE.",
+      "inputSchema": {
+        "properties": {
+          "productTypeFilter": {
+            "type": "array",
+            "description": "Optional list of product-type identifiers. When supplied, only targets whose productTypeIdentifier matches one of the entries are returned. Each entry is matched case-insensitively against either the full identifier (e.g. 'com.apple.product-type.application') or its suffix after 'com.apple.product-type.' (e.g. 'application', 'framework', 'framework.static', 'library.static', 'bundle.unit-test', 'bundle.ui-testing', 'app-extension', 'extensionkit-extension'). Aggregate targets — which have no productTypeIdentifier — are excluded by any non-empty filter; pass an empty array or omit the parameter to keep them.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "projectPath": {
+            "type": "string",
+            "description": "Optional project-organization or filesystem path to a specific .xcodeproj container in the workspace (e.g. 'MyApp/MyApp.xcodeproj' or 'MyApp/MyApp'). When supplied, the listing is restricted to targets owned by that project. Both forms — with and without the .xcodeproj suffix — are accepted."
+          },
+          "tabIdentifier": {
+            "type": "string",
+            "description": "The workspace tab identifier."
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "fullTargetListPath": {
+            "type": "string",
+            "description": "Path to a file containing the complete target list in grep-friendly format."
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message with additional information about truncation."
+          },
+          "targets": {
+            "type": "array",
+            "description": "Visible, project-owned targets matching the scope and productTypeFilter, capped at 100 entries. Sorted by containingProjectPath, then by name (alphabetical) — predictable for both inline reading and truncation.",
+            "items": {
+              "properties": {
+                "containingProjectPath": {
+                  "type": "string",
+                  "description": "Canonical project-organization path of the .xcodeproj that owns this target (e.g. 'MyApp/MyApp.xcodeproj'). Null only for the rare case where the path could not be canonicalized."
+                },
+                "isAggregate": {
+                  "type": "boolean",
+                  "description": "True for targets that have no productTypeIdentifier of their own. Covers both classic aggregate targets and external-build / legacy targets; treat this flag as 'no product type' rather than strictly 'aggregate'."
+                },
+                "isAppExtension": {
+                  "type": "boolean",
+                  "description": "True for app extensions (classic appex and ExtensionKit variants)."
+                },
+                "isTestTarget": {
+                  "type": "boolean",
+                  "description": "True if the target is a test bundle."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The target name as shown in the project editor and as accepted by other target-aware tools (like GetTargetBuildSettings) targetName parameter."
+                },
+                "productTypeIdentifier": {
+                  "type": "string",
+                  "description": "The platform-scoped product type id (e.g. 'com.apple.product-type.application', 'com.apple.product-type.framework', 'com.apple.product-type.bundle.unit-test'). Null for aggregate targets and other blueprints with no product."
+                },
+                "productTypeName": {
+                  "type": "string",
+                  "description": "Human-readable product-type name (e.g. 'Application', 'Framework', 'Unit Test Bundle'). Null when no product type is resolved."
+                },
+                "supportsHostingTests": {
+                  "type": "boolean",
+                  "description": "True if the product type can host a unit-test bundle. Useful when picking a host for a new test target."
+                }
+              },
+              "required": [
+                "name",
+                "isTestTarget",
+                "supportsHostingTests",
+                "isAppExtension",
+                "isAggregate"
+              ],
+              "type": "object"
+            }
+          },
+          "totalTargets": {
+            "type": "integer",
+            "description": "Total number of matching targets before truncation."
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True if the inline targets array was truncated because more than 100 targets matched."
+          }
+        },
+        "required": [
+          "targets",
+          "totalTargets",
+          "truncated",
+          "fullTargetListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListTemplates",
+      "title": "List Templates",
+      "description": "Lists Xcode templates available in this Xcode install. Use this to discover the templateIdentifier\nand option keys to pass to XcodeNewTarget. The unfiltered listing is large (~200 target templates);\nalways pass at least one filter — typically platformFilter (e.g. [\"ios\"]) and/or categoryFilter\n(e.g. [\"Application\"]). Use nameFilter for a substring search by name. Pass templateIdentifier when\nyou already know the identifier to get back just that one entry. Each TemplateInfo includes the\ntemplate's options (popup / checkbox / text) so the caller can fill them in without a second round\ntrip — EXCEPT when no filter is supplied: in that \"broad browse\" case the inline `options` array\nis empty for each entry to keep the response small. Pass any filter (or templateIdentifier) to get\nthe full option schema. Inline results are capped at 100; the complete list with\nfull options for every template is always written to fullTemplateListPath in grep-friendly format\nwith keys like TEMPLATE_INDEX, TEMPLATE_IDENTIFIER, TEMPLATE_NAME, TEMPLATE_CATEGORY, PLATFORM,\nIS_MULTI_PLATFORM, OPTION_*.\nCurrently supports kind=\"target\" only; other kinds return an error listing the supported values.",
+      "inputSchema": {
+        "properties": {
+          "categoryFilter": {
+            "type": "array",
+            "description": "Optional list of substrings, case-insensitive, matched against the template's templateCategory (e.g. 'Application', 'Framework & Library', 'Application Extension').",
+            "items": {
+              "type": "string"
+            }
+          },
+          "kind": {
+            "type": "string",
+            "description": "Optional template kind to list. Currently supports only 'target' (the default). More kinds may be added in future versions."
+          },
+          "nameFilter": {
+            "type": "string",
+            "description": "Optional substring, case-insensitive, matched against the template's human-readable templateName (e.g. 'Framework', 'Widget')."
+          },
+          "platformFilter": {
+            "type": "array",
+            "description": "Optional list of platform identifiers or names (case-insensitive). Matches identifier or name on the template's templatePlatforms (e.g. 'ios', 'macos', 'tvos', 'watchos', 'visionos'). Templates flagged multi-platform or platform-generic are always included.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "templateIdentifier": {
+            "type": "string",
+            "description": "Optional exact identifier match (e.g. 'com.apple.dt.unit.iosFramework'). When supplied, the listing returns only the matching template — useful for retrieving the option schema for a known template."
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "fullTemplateListPath": {
+            "type": "string",
+            "description": "Path to a file containing the complete template list in grep-friendly format."
+          },
+          "message": {
+            "type": "string",
+            "description": "Optional message with additional information about truncation."
+          },
+          "templates": {
+            "type": "array",
+            "description": "Templates matching the supplied filters, capped at 100 entries. Sorted by templateCategory, then by templateName (alphabetical, case-insensitive).",
+            "items": {
+              "properties": {
+                "identifier": {
+                  "type": "string",
+                  "description": "Stable reverse-DNS identifier (e.g. 'com.apple.dt.unit.iosFramework'). Pass this to XcodeNewTarget's templateIdentifier."
+                },
+                "isMultiPlatform": {
+                  "type": "boolean",
+                  "description": "True if the template explicitly supports multiple platforms (declared with an empty Platforms array)."
+                },
+                "isPlatformGeneric": {
+                  "type": "boolean",
+                  "description": "True if the template is not tied to any specific platform (declared without a Platforms array)."
+                },
+                "options": {
+                  "type": "array",
+                  "description": "The template's caller-settable options. Pass values via XcodeNewTarget's `options` dict using each option.identifier as the key. Empty when XcodeListTemplates is called with no filter (broad browse mode) — pass any filter (platformFilter, categoryFilter, nameFilter, or templateIdentifier) to drill in and get the full options for the matching templates. The complete options for every template are always included in `fullTemplateListPath`.",
+                  "items": {
+                    "properties": {
+                      "defaultValue": {
+                        "type": "string",
+                        "description": "The option's current default value, if any. Bools surface in the framework's canonical form: 'true' or 'false'."
+                      },
+                      "identifier": {
+                        "type": "string",
+                        "description": "Stable key (e.g. 'productName', 'languageChoice', 'coreData'). Pass as a key in the XcodeNewTarget `options` dict."
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Human-readable label for the option, if the template provides one."
+                      },
+                      "possibleValues": {
+                        "type": "array",
+                        "description": "For 'popup' / 'combo' / 'class' types: the allowed string values. Null for free-form types.",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "One of 'popup' (string-enum), 'checkbox' (bool — pass 'true' or 'false' as the value), 'text' (free string), or other less-common types ('combo', 'class', 'static', 'buildSetting')."
+                      }
+                    },
+                    "required": [
+                      "identifier",
+                      "type"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "platforms": {
+                  "type": "array",
+                  "description": "Platform identifiers the template targets (e.g. ['com.apple.platform.iphoneos']). Empty for multi-platform or platform-generic templates.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "summary": {
+                  "type": "string",
+                  "description": "Short human-readable summary from the template, if provided."
+                },
+                "templateCategory": {
+                  "type": "string",
+                  "description": "Category string (e.g. 'Application', 'Framework & Library', 'Application Extension')."
+                },
+                "templateName": {
+                  "type": "string",
+                  "description": "Human-readable template name (e.g. 'Framework', 'Widget Extension', 'Unit Testing Bundle')."
+                }
+              },
+              "required": [
+                "identifier",
+                "templateName",
+                "templateCategory",
+                "platforms",
+                "isMultiPlatform",
+                "isPlatformGeneric",
+                "options"
+              ],
+              "type": "object"
+            }
+          },
+          "totalTemplates": {
+            "type": "integer",
+            "description": "Total number of matching templates before truncation."
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True if the inline templates array was truncated because more than 100 templates matched. Tighten the filters to narrow the result set."
+          }
+        },
+        "required": [
+          "templates",
+          "totalTemplates",
+          "truncated",
+          "fullTemplateListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListTestPlans",
+      "title": "List Test Plans",
+      "description": "Lists the test plans associated with the currently active scheme and identifies which one\nis active. The testing tools (GetTestList, RunAllTests, RunSomeTests) and build-for-testing\noperate on the active test plan, so use XcodeSwitchTestPlan to change it before building or\nrunning tests against a different plan. If the active scheme has not been upgraded to use\ntest plans, `usesTestPlans` is false and `testPlans` is empty. Inline results are limited to\n100 plans with the active plan listed first; the complete list is always\nwritten to fullTestPlanListPath in grep-friendly format with keys like TEST_PLAN_NAME and\nIS_ACTIVE.",
+      "inputSchema": {
+        "properties": {
+          "tabIdentifier": {
+            "type": "string",
+            "description": "The workspace tab identifier."
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "type": "string",
+            "description": "The name of the currently active test plan, or null if the scheme does not use test plans or has none."
+          },
+          "fullTestPlanListPath": {
+            "type": "string",
+            "description": "Path to a file containing the complete test plan list in grep-friendly format."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the result."
+          },
+          "schemeName": {
+            "type": "string",
+            "description": "The name of the active scheme whose test plans are listed."
+          },
+          "testPlans": {
+            "type": "array",
+            "description": "The test plans associated with the active scheme, limited to 100 entries with the active plan listed first. Empty if the scheme does not use test plans.",
+            "items": {
+              "properties": {
+                "isActive": {
+                  "type": "boolean",
+                  "description": "True if this is the currently active test plan."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The test plan's name, as it appears in the Xcode test plan picker. Pass this value to XcodeSwitchTestPlan (unless the name is ambiguous — see `path`)."
+                },
+                "path": {
+                  "type": "string",
+                  "description": "The test plan's file path. Populated ONLY when more than one test plan shares this `name`; null otherwise. When present, pass this path (or any unambiguous trailing portion of it, e.g. the last path component) to XcodeSwitchTestPlan to select this specific plan."
+                }
+              },
+              "required": [
+                "name",
+                "isActive"
+              ],
+              "type": "object"
+            }
+          },
+          "totalTestPlans": {
+            "type": "integer",
+            "description": "Total number of test plans before truncation."
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "True if the inline testPlans array was truncated because more than 100 test plans exist."
+          },
+          "usesTestPlans": {
+            "type": "boolean",
+            "description": "True if the active scheme has been upgraded to use test plans. When false, testing operates on the scheme's legacy test targets and there is no test plan to switch."
+          }
+        },
+        "required": [
+          "testPlans",
+          "usesTestPlans",
+          "schemeName",
+          "truncated",
+          "totalTestPlans",
+          "fullTestPlanListPath",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "XcodeListWindows",
       "title": "List Windows",
       "description": "Lists the current Xcode windows and their workspace information",
@@ -3237,16 +3576,7 @@
             "description": "Project navigator relative path for the destination (for move) or new name (for rename)"
           },
           "operation": {
-            "properties": {
-              "rawValue": {
-                "type": "string",
-                "description": "Move operation type"
-              }
-            },
-            "required": [
-              "rawValue"
-            ],
-            "type": "object",
+            "type": "string",
             "description": "The type of move operation to perform",
             "enum": [
               "move",
@@ -3341,6 +3671,84 @@
         "required": [
           "success",
           "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeNewTarget",
+      "title": "New Target",
+      "description": "Adds a new target to a project in the current Xcode workspace using a target template. Discover\nvalid templateIdentifier values (and the option schema for each) with XcodeListTemplates.\n\nRequired: templateIdentifier (e.g. 'com.apple.dt.unit.iosFramework') and productName (the new\ntarget's product name, e.g. 'MyFeature'). productName must be unique within the destination\nproject — duplicates are rejected up front. Note that some templates derive a target name\nfrom productName (e.g. Widget Extension appends 'Extension'); the actual final name is\nreturned in `targetName`.\n\norganizationIdentifier overrides the workspace default for the bundle identifier prefix. When\nembedInAppNamed is set and organizationIdentifier is left unset, the prefix auto-derives from\nthe host app's evaluated PRODUCT_BUNDLE_IDENTIFIER so the embedded target's bundle id is\nprefixed by the host's (Xcode's `<host>.<extension>` code-signing rule).\n\nTemplate-specific options go in `options`: each key is an IDETemplateOption.identifier from\nXcodeListTemplates (e.g. 'languageChoice', 'coreData', 'testingSystem'); pass values as strings.\nCheckbox options accept 'true'/'false' (also 'YES'/'NO' or '1'/'0', case-insensitive).\nPopup options must use one of the strings from the OptionInfo.possibleValues list returned by\nXcodeListTemplates. Unknown keys and invalid values are rejected with a list of valid keys/values.\n\nprojectPath selects which .xcodeproj in the workspace owns the new target — required only\nwhen the workspace contains more than one project and `embedInAppNamed` doesn't\ndisambiguate; resolution rules match XcodeListTargets.\n\nembedInAppNamed embeds the new target in an existing app target (useful for app extensions,\nwidgets, intents). The named target must already exist and be an application.\n\nSide effect to be aware of: If \"Autocreate schemes\" is enabled for the workspace then a scheme may be created for the new\ntarget and switched to as the active scheme. The post-instantiation active scheme name is\nreturned in `activeSchemeName`.",
+      "inputSchema": {
+        "properties": {
+          "embedInAppNamed": {
+            "type": "string",
+            "description": "Optional name of an existing application target to embed the new target into (relevant for app extensions, widgets, intents, etc.). MUST live in the same project as the new target — cross-project embedding is rejected. In a multi-project workspace, if `projectPath` is omitted and exactly one application target in the workspace has this name, that target's project is used as the destination automatically."
+          },
+          "options": {
+            "type": "object",
+            "description": "Optional dictionary of template-specific options. Keys are IDETemplateOption identifiers from XcodeListTemplates (e.g. 'languageChoice', 'testingSystem', 'coreData'). All values are strings. Checkbox options accept 'true'/'false', 'YES'/'NO', or '1'/'0' (case-insensitive) — normalized for you. Popup options must be one of OptionInfo.possibleValues. Unknown keys are rejected with a list of valid keys. Reserved: do NOT include `productName`, `organizationIdentifier`, or `bundleIdentifierPrefix` here — they're set via the dedicated top-level parameters and a duplicate in `options` is rejected."
+          },
+          "organizationIdentifier": {
+            "type": "string",
+            "description": "Optional bundle-identifier prefix to set on the new target (sets the 'organizationIdentifier' template option). Defaults to the workspace's organization identifier when omitted."
+          },
+          "productName": {
+            "type": "string",
+            "description": "The new target's product name (PRODUCT_NAME), e.g. 'MyFeature'. Must be non-empty. Most templates also use this as the target name verbatim, but some derive a different name (e.g. the Widget Extension template appends 'Extension', producing target 'MyFeatureExtension'). Check the `targetName` returned in the output for the actual final name — that's the value to pass to GetTargetBuildSettings, etc."
+          },
+          "projectPath": {
+            "type": "string",
+            "description": "Optional project-organization or filesystem path to the .xcodeproj that should own the new target (e.g. 'MyApp/MyApp.xcodeproj'). Required only when the workspace contains more than one project and `embedInAppNamed` doesn't disambiguate. Both forms — with and without the .xcodeproj suffix — are accepted."
+          },
+          "tabIdentifier": {
+            "type": "string",
+            "description": "The workspace tab identifier."
+          },
+          "templateIdentifier": {
+            "type": "string",
+            "description": "Template identifier to instantiate (e.g. 'com.apple.dt.unit.iosFramework'). Discover values with XcodeListTemplates."
+          }
+        },
+        "required": [
+          "templateIdentifier",
+          "productName"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeSchemeName": {
+            "type": "string",
+            "description": "Name of the active scheme after instantiation. Xcode's target templates often switch the active scheme to a newly auto-generated one for the new target. Null only when no active scheme could be read."
+          },
+          "additionalTargetsCreated": {
+            "type": "array",
+            "description": "Names of any other targets the template added alongside the primary one (e.g. an accompanying test bundle when `testingSystem` is set on a framework template). Sorted alphabetically. Empty when the template added only the primary target.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "containingProjectPath": {
+            "type": "string",
+            "description": "Project-organization path of the .xcodeproj that received the new target (e.g. 'MyApp/MyApp.xcodeproj'). May be null only if the path could not be canonicalized."
+          },
+          "primaryFilePath": {
+            "type": "string",
+            "description": "Filesystem path of the template's primary file (the one Xcode would open in the editor). Null when the template does not designate one."
+          },
+          "targetGroupPath": {
+            "type": "string",
+            "description": "Project-organization path of the directory Xcode's target templates conventionally write the new target's files to. Null if the conventional directory does not exist on disk (rare; the template may have placed files elsewhere)."
+          },
+          "targetName": {
+            "type": "string",
+            "description": "The actual name of the newly added target. Usually equals productName, but some templates derive a different name (e.g. Widget Extension appends 'Extension', so productName 'MyWidget' becomes target 'MyWidgetExtension'). Pass this back to GetTargetBuildSettings, UpdateTargetBuildSetting, etc."
+          }
+        },
+        "required": [
+          "targetName",
+          "additionalTargetsCreated"
         ],
         "type": "object"
       }
@@ -3598,6 +4006,53 @@
         },
         "required": [
           "activeSchemeName",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeSwitchTestPlan",
+      "title": "Switch Test Plan",
+      "description": "Changes the active test plan for the currently active scheme. The testing tools (GetTestList, RunAllTests, RunSomeTests) and build-for-testing all operate on the active test plan, so switch it before building or running tests against a different plan. Use XcodeListTestPlans to discover the available test plan names. Pass a plan's name; if two plans share a name, pass the `path` XcodeListTestPlans reports for the one you want (or any unambiguous trailing portion of it). This is a persistent change to the scheme's active test plan, equivalent to selecting a different plan in Xcode's test plan picker.",
+      "inputSchema": {
+        "properties": {
+          "tabIdentifier": {
+            "type": "string",
+            "description": "The workspace tab identifier."
+          },
+          "testPlanName": {
+            "type": "string",
+            "description": "Which test plan to make active. Normally the plan's name as returned by XcodeListTestPlans (e.g. \"UnitTests\"). If two plans share a name, XcodeListTestPlans reports a `path` for each; pass that full path, or any unambiguous trailing portion of it (e.g. the last path component), to select a specific plan."
+          }
+        },
+        "required": [
+          "testPlanName"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "type": "string",
+            "description": "The name of the test plan that is now active."
+          },
+          "activeTestPlanPath": {
+            "type": "string",
+            "description": "The file path of the test plan that is now active. Populated ONLY when more than one test plan shares `activeTestPlanName`, so callers can confirm which instance was selected; null when the name is unique."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the result."
+          },
+          "schemeName": {
+            "type": "string",
+            "description": "The name of the scheme the test plan belongs to (unchanged by this action)."
+          }
+        },
+        "required": [
+          "activeTestPlanName",
+          "schemeName",
           "message"
         ],
         "type": "object"
