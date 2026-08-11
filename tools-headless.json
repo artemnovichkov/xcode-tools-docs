@@ -1,0 +1,4157 @@
+{
+  "tools": [
+    {
+      "name": "AddEntitlement",
+      "title": "Add Entitlement",
+      "description": "Add a new entitlement to the project's entitlements file.\n\nMost Apple APIs do NOT require an entitlement. Only use this tool when a\nfeature requires a code-signing entitlement. These are things like access\nto protected hardware, sandboxed data stores shared between apps, paid\ntransaction processing, or privileged inter-process communication.\n\nDo NOT use this tool or add an entitlement for:\n- Adding UI components or using standard frameworks (SwiftUI, UIKit, MapKit, AVFoundation, CoreLocation, etc.)\n- Privacy usage descriptions \u2014 those are Info.plist keys, not entitlements. You should use the AddInfoPlist tool.\n- General feature development that doesn't involve a restricted system capability\n\nWhen in doubt, do NOT call this tool or add an entitlement. If you run\ninto debugging issues after adopting a new API \u2014 such as failures\nconnecting to system XPC services \u2014 you can add the entitlement then.\n\nParameters:\n    - targetName: The name of the Xcode target to add the entitlement to. Use another tool to discover the target names if you don't already know them.\n    - entitlementKey: The entitlement key you want to add.\n    - entitlementValueType: The type of the value \u2014 'bool', 'string', 'int', 'stringArray', or 'dictionary'.\n    - entitlementValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n    - entitlementValueItems: Array of strings (only for stringArray type).\n    - entitlementDictionaryItems: JSON-encoded dictionary (only for dictionary type).\n\nNote: It is IMPORTANT that you do not edit the entitlement file directly unless told to. ALWAYS call this tool if you need to change the entitlement file.",
+      "inputSchema": {
+        "properties": {
+          "entitlementDictionaryItems": {
+            "description": "A JSON-encoded string representing a dictionary. Required when entitlementValueType is 'dictionary'. Example: '{\"key\":\"value\"}'.",
+            "type": "string"
+          },
+          "entitlementKey": {
+            "description": "The entitlement key you want to add.",
+            "type": "string"
+          },
+          "entitlementValue": {
+            "description": "The entitlement value as a string. Required when entitlementValueType is 'bool', 'string', or 'int'. For bool, pass 'true' or 'false'. For int, pass the number as a string. Not used for stringArray or dictionary types.",
+            "type": "string"
+          },
+          "entitlementValueItems": {
+            "description": "Array of string values. Required when entitlementValueType is 'stringArray'.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "entitlementValueType": {
+            "description": "The type of the entitlement value. Most entitlements are 'bool' (pass entitlementValue 'true'). Some are 'string' (pass the value in entitlementValue). A few are 'stringArray' (pass values in entitlementValueItems instead). Use 'dictionary' for entitlements whose value is a plist dictionary (pass JSON in entitlementDictionaryItems).",
+            "enum": [
+              "bool",
+              "string",
+              "int",
+              "stringArray",
+              "dictionary"
+            ],
+            "type": "string"
+          },
+          "projectPath": {
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The name of the Xcode target to add the entitlement to. Use another tool (e.g. GetTargetBuildSettings) to discover target names if they are not already known.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "entitlementKey",
+          "entitlementValueType"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "errorDescription": {
+            "description": "An optional description of the error when trying to add the entitlement. This string will be available if result is false.",
+            "type": "string"
+          },
+          "result": {
+            "description": "A boolean to indicate if adding the entitlement was successful or not.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "AddInfoPlist",
+      "title": "Add Info.plist Entry",
+      "description": "Add or update an Info.plist key in the project.\n\nUse this tool for app configuration metadata such as:\n- Privacy usage descriptions (e.g. NSCameraUsageDescription, NSLocationWhenInUseUsageDescription)\n- App Transport Security settings\n- Supported interface orientations\n- URL schemes and document types\n- Background modes\n- Bundle display name, version, or other app metadata\n\nThis is NOT for entitlements. If you need a restricted system capability\ngated by code signing (like Push Notifications, App Groups, or iCloud),\nuse the AddEntitlement tool instead.\n\nParameters:\n- targetName: The name of the Xcode target to add the Info.plist key to. Use another tool to discover the target names if you don't already know them.\n- infoPlistKey: The key for the info.plist value you want to add.\n- infoPlistValueType: The type of the value \u2014 'bool', 'string', 'int', 'stringArray', or 'dictionaryArray'.\n- infoPlistValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n- infoPlistValueItems: Array of strings (only for stringArray type).\n- infoPlistDictionaryItems: JSON-encoded array of dictionaries (only for dictionaryArray type).\n\nIMPORTANT: Do NOT modify the Info.plist file directly. Always use this tool\nto add or edit Info.plist keys, even if the project has GENERATE_INFOPLIST_FILE enabled.",
+      "inputSchema": {
+        "properties": {
+          "infoPlistDictionaryItems": {
+            "description": "A JSON-encoded string representing an array of dictionaries. Required when infoPlistValueType is 'dictionaryArray'. Example: '[{\"NSAllowsArbitraryLoads\": true}]'",
+            "type": "string"
+          },
+          "infoPlistKey": {
+            "description": "The Info.plist key to add or change",
+            "type": "string"
+          },
+          "infoPlistValue": {
+            "description": "The value as a string. Required when infoPlistValueType is 'bool', 'string', or 'int'. For bool, pass 'true' or 'false'. For int, pass the number as a string. Not used for stringArray or dictionaryArray types.",
+            "type": "string"
+          },
+          "infoPlistValueItems": {
+            "description": "Array of string values. Required when infoPlistValueType is 'stringArray'.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "infoPlistValueType": {
+            "description": "The type of the Info.plist value. Common types are 'string' (for privacy descriptions, display names) and 'bool' (for boolean flags). Use 'stringArray' for lists and 'dictionaryArray' for complex structures like App Transport Security settings.",
+            "enum": [
+              "bool",
+              "string",
+              "int",
+              "stringArray",
+              "dictionaryArray"
+            ],
+            "type": "string"
+          },
+          "projectPath": {
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The name of the Xcode target whose Info.plist key should be added or updated. Use another tool (e.g. GetTargetBuildSettings) to discover target names if they are not already known.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "infoPlistKey",
+          "infoPlistValueType"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "errorDescription": {
+            "description": "An optional description of the error when trying to add the info.plist. This string will be available if result is false.",
+            "type": "string"
+          },
+          "result": {
+            "description": "Whether or not adding/updating the info.plist was successful.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "BuildProject",
+      "title": "Build Project",
+      "description": "Builds an Xcode project and waits until the build completes.",
+      "inputSchema": {
+        "properties": {
+          "buildForTesting": {
+            "description": "Whether to also build test targets that would not usually be included in a regular build",
+            "type": "boolean"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "buildResult": {
+            "description": "The message indicating the result of the build operation",
+            "type": "string"
+          },
+          "elapsedTime": {
+            "description": "The time it took to finish the build, in seconds",
+            "type": "number"
+          },
+          "errors": {
+            "description": "List of build errors",
+            "items": {
+              "properties": {
+                "classification": {
+                  "description": "The type of error (error, warning, etc.)",
+                  "type": "string"
+                },
+                "filePath": {
+                  "description": "The file path where the error occurred",
+                  "type": "string"
+                },
+                "lineNumber": {
+                  "description": "The line number where the error occurred",
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "The error message",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "classification",
+                "message"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "fullLogPath": {
+            "description": "Path of the full log in textual format, containing the complete command lines and any output from the build tasks",
+            "type": "string"
+          }
+        },
+        "required": [
+          "buildResult",
+          "errors",
+          "fullLogPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DeviceInteractionEndSession",
+      "title": "End Device Interaction Session",
+      "description": "Closes previous device session created in DeviceInteractionStartSession or DeviceInteractionStartWorkspaceSession.\n        \nCall this action once you have finished interacting with a device.\nKeeping a device interaction session alive is expensive and affects the user-facing UI.\nIt is crucial to close the session when not in use.",
+      "inputSchema": {
+        "properties": {
+          "interactionSessionKey": {
+            "description": "Device Interaction session to close. Taken from DeviceInteractionStartSession or DeviceInteractionStartWorkspaceSession",
+            "type": "string"
+          }
+        },
+        "required": [
+          "interactionSessionKey"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "userMessage": {
+            "description": "A summary of the action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userMessage"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DeviceInteractionInstallAndRun",
+      "title": "Prepare for device interaction: install and start application on a device",
+      "description": "Builds, installs, and starts the current application on the currently targeted device.\n\nCall this action to install the application on the currently targeted device and start it\nso subsequent interaction calls will have the most up to date version.\nInvoke this every time you modify a project, change the target device, or the previous\ndebug session has been disconnected and application logs are missing.",
+      "inputSchema": {
+        "properties": {
+          "commandLineArguments": {
+            "description": "Arguments that the application should be run with. Can include '$(inherited)' placeholder string for scheme-provided arguments",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "environmentVariables": {
+            "description": "Environment variables that the application should be run with. Can contain '$(inherited)' as a key to include scheme-provided environment variables",
+            "type": "object"
+          },
+          "interactionSessionKey": {
+            "description": "Device Interaction session identifier that initiates this call. Taken from DeviceInteractionStartWorkspaceSession",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "interactionSessionKey"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "userMessage": {
+            "description": "A summary of the action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userMessage"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DeviceInteractionStartSession",
+      "title": "Start Device Interaction Session",
+      "description": "Prepares a runtime for iOS interaction WITHOUT a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing work.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nThis session cannot build or install the project. If you need to install&run the app you are\nworking on, use DeviceInteractionStartWorkspaceSession instead.",
+      "inputSchema": {
+        "properties": {
+          "deviceIdentifier": {
+            "description": "The UUID/ECID/name/OS version/type of the device to perform interaction. Accepts any values and tries to match the best candidate.",
+            "type": "string"
+          },
+          "sessionIdentifier": {
+            "description": "Unique human-friendly identifier for this session (e.g. \"Verify Login Flow\"). Used in logs and UI - use Title Case.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceIdentifier",
+          "sessionIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "deviceIsSimulator": {
+            "description": "true if the device for this session is a simulator, otherwise false",
+            "type": "boolean"
+          },
+          "deviceUUID": {
+            "description": "UUID of the device to be used for the interaction session",
+            "type": "string"
+          },
+          "interactionSessionKey": {
+            "description": "A secret key to identify the interaction session",
+            "type": "string"
+          },
+          "skillToTrigger": {
+            "description": "The name of the skill that will handle the next step(s)",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Notes about the session and guidance on next steps for a caller",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "skillToTrigger",
+          "interactionSessionKey",
+          "deviceUUID",
+          "deviceIsSimulator"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DeviceInteractionStartWorkspaceSession",
+      "title": "Start Device Interaction Workspace Session",
+      "description": "Prepares a runtime for iOS interaction WITH a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing feature development.\nBecause it is bound to the workspace, it only offers devices the current scheme can run on, and it\nenables installing&running the project via DeviceInteractionInstallAndRun.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nDo NOT call this if the application you are working on doesn't have to be built and installed on a device.",
+      "inputSchema": {
+        "properties": {
+          "deviceIdentifier": {
+            "description": "The UUID/ECID/name/OS version/type of the device to perform interaction. Accepts any values and tries to match the best candidate.",
+            "type": "string"
+          },
+          "sessionIdentifier": {
+            "description": "Unique human-friendly identifier for this session (e.g. \"Verify Login Flow\"). Used in logs and UI - use Title Case.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "deviceIsSimulator": {
+            "description": "true if the device for this session is a simulator, otherwise false",
+            "type": "boolean"
+          },
+          "deviceUUID": {
+            "description": "UUID of the device to be used for the interaction session",
+            "type": "string"
+          },
+          "interactionSessionKey": {
+            "description": "A secret key to identify the interaction session",
+            "type": "string"
+          },
+          "skillToTrigger": {
+            "description": "The name of the skill that will handle the next step(s)",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Notes about the session and guidance on next steps for a caller",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "skillToTrigger",
+          "interactionSessionKey",
+          "deviceUUID",
+          "deviceIsSimulator"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DeviceInteractionSynthesize",
+      "title": "Perform single device interaction and fetch device state",
+      "description": "Synthesizes device events (tap, swipe, type, etc.) on a physical device or simulator\nand captures the resulting state.\n\nThis action provides a unified interface for device interaction. After executing the\nspecified interaction command, it captures a screenshot and UI hierarchy, returning\npaths to both files.\nUse this to:\n- Tap UI elements at specific coordinates\n- Swipe/scroll through content\n- Type text into fields\n- Press hardware buttons\n- Capture current device state (screenshot + hierarchy)\n- Change device orientation\n\nAlways use positions based on the most recent hierarchy dump. Never try to guess positions from a screenshot only.",
+      "inputSchema": {
+        "properties": {
+          "activationBundleId": {
+            "description": "Bundle identifier of the app to activate before any interactions",
+            "type": "string"
+          },
+          "interactSessionKey": {
+            "description": "Device Interaction session key to work with. Taken from DeviceInteractionStartSession or DeviceInteractionStartWorkspaceSession",
+            "type": "string"
+          },
+          "interactionCommand": {
+            "description": "The interaction command to execute (e.g., 't 100 200' for tap)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "interactSessionKey"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "applicationState": {
+            "description": "State of the run application: NotRun, Running, Stopped, Crashed, Disconnected, Hanging, RunningInBackground.",
+            "type": "string"
+          },
+          "hierarchyPath": {
+            "description": "Path to the captured UI hierarchy file (incl. device orientation). If missing, retry as that might be AX transient issue",
+            "type": "string"
+          },
+          "logsPath": {
+            "description": "Path to the file where collected console logs of the application are stored",
+            "type": "string"
+          },
+          "screenshotPath": {
+            "description": "Path to the captured full-size screenshot",
+            "type": "string"
+          },
+          "thumbnailScreenshotPath": {
+            "description": "Path to a screenshot file with small resolution",
+            "type": "string"
+          }
+        },
+        "required": [
+          "thumbnailScreenshotPath",
+          "screenshotPath",
+          "hierarchyPath",
+          "logsPath",
+          "applicationState"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "DocumentationSearch",
+      "title": "DocumentationSearch",
+      "description": "Searches Apple Developer Documentation using semantic matching.",
+      "inputSchema": {
+        "properties": {
+          "frameworks": {
+            "description": "Framework(s) to search in. Searches all frameworks if not specified.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "query": {
+            "description": "The search query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "documents": {
+            "description": "The documents most relevant to the search query",
+            "items": {
+              "properties": {
+                "contents": {
+                  "description": "The document contents",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The kind of document",
+                  "type": "string"
+                },
+                "score": {
+                  "description": "The matching score of the document",
+                  "type": "number"
+                },
+                "title": {
+                  "description": "The document title",
+                  "type": "string"
+                },
+                "uri": {
+                  "description": "The document uri",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "uri",
+                "contents",
+                "score",
+                "kind"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "documents"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetBuildLog",
+      "title": "Get Build Log",
+      "description": "Gets the log of the current or most recently finished build. You can choose which build log entries to include by specifying the severity of any issues emitted by the build task represented by the entry. You can also filter by message regex pattern or file glob pattern. The response also indicates whether the build is currently in progress.",
+      "inputSchema": {
+        "properties": {
+          "glob": {
+            "description": "Glob to filter the returned build log entries. Will match against the 'path' field of any emitted issues, as well as against the location of any build task.",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "Regex to filter the returned build log entries. Will match against the 'message' field of any emitted issues, as well as the task description, command line, and console output of any build tasks.",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Limit the output of build log entries to those that emitted issues of the specified severity or higher. Valid values in order of decreasing severity are 'error', 'warning', 'remark'. Defaults to 'error'.",
+            "enum": [
+              "remark",
+              "warning",
+              "error"
+            ],
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "buildIsRunning": {
+            "description": "Indicates whether the build is still running.",
+            "type": "boolean"
+          },
+          "buildLogEntries": {
+            "description": "The build log entries describing build commands that emitted issues",
+            "items": {
+              "properties": {
+                "buildTask": {
+                  "description": "The build task represented by the log entry",
+                  "type": "string"
+                },
+                "emittedIssues": {
+                  "description": "Any issues emitted by the build task represented by the log entry",
+                  "items": {
+                    "properties": {
+                      "line": {
+                        "description": "The line number where the issue was detected, if known",
+                        "type": "integer"
+                      },
+                      "message": {
+                        "description": "The message describing the issue",
+                        "type": "string"
+                      },
+                      "path": {
+                        "description": "The file path where the issue was detected, if any",
+                        "type": "string"
+                      },
+                      "severity": {
+                        "description": "The severity of issue (error, warning, remark)",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "severity",
+                      "message"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": [
+                "emittedIssues"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "buildResult": {
+            "description": "The message indicating the result of the build operation",
+            "type": "string"
+          },
+          "fullLogPath": {
+            "description": "Path of the full log in textual format, containing the complete command lines and any output from the build tasks",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional message with additional information about the search results",
+            "type": "string"
+          },
+          "totalFound": {
+            "description": "Total number of build log entries before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 issues",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "buildResult",
+          "buildLogEntries",
+          "buildIsRunning",
+          "truncated",
+          "totalFound",
+          "fullLogPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetConsoleOutput",
+      "title": "Get Console Output",
+      "description": "Retrieves console output (stdout, stderr, OSLog) from a running or completed app launch session. Supports regex filtering, severity filtering, and context extraction. Use this to analyze app logs, debug issues, find errors, or understand app behavior.",
+      "inputSchema": {
+        "properties": {
+          "contextLines": {
+            "description": "Number of context lines to include around pattern matches (like grep -C). Use this with 'pattern' to see surrounding context. Default: 0",
+            "type": "integer"
+          },
+          "includeMetadata": {
+            "description": "Include detailed OSLog metadata (subsystem, category, pid, tid, sender info). Only applies to OSLog items. Default: false",
+            "type": "boolean"
+          },
+          "launchSessionReference": {
+            "description": "Optional launch session reference. Omit to use the current/most recent launch session.",
+            "type": "string"
+          },
+          "oslogSeverity": {
+            "description": "Filter OSLog by severity levels. Array of: 'error', 'fault', 'info', 'debug', 'default'. Only filters OSLog items, not stdout/stderr. Omit to include all severities.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "outputType": {
+            "description": "Type of output to retrieve: 'stdio' (stdout/stderr only), 'oslog' (OSLog only), or 'all' (both). Default: 'all'",
+            "enum": [
+              "stdio",
+              "oslog",
+              "all"
+            ],
+            "type": "string"
+          },
+          "pattern": {
+            "description": "Optional regex pattern to filter console output. Uses full regex syntax (e.g., 'error.*failed', 'Exception.*\\n.*at line'). Filters both stdout/stderr text and OSLog message content.",
+            "type": "string"
+          },
+          "tailLimit": {
+            "description": "Maximum number of lines to return from the END of output (tail behavior). Returns the last N lines. Default: 500.",
+            "type": "integer"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "launchSessionInfo": {
+            "description": "Information about the launch session: app name, reference, PID, and state (running/expired/etc). Useful for verifying which session was queried.",
+            "type": "string"
+          },
+          "totalCount": {
+            "description": "Total line count before limits applied. Use this to understand how much output was available.",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "True if results were truncated due to tailLimit.",
+            "type": "boolean"
+          },
+          "units": {
+            "description": "Array of console output units. Each unit is a message/log entry with content, timestamp, kind (stdio/oslog), and optional severity.",
+            "items": {
+              "properties": {
+                "content": {
+                  "description": "The console output text. For stdio: raw stdout/stderr text. For OSLog: the log message (without metadata unless includeMetadata=true, then this is the parsed message).",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The type of console output: 'stdio' for stdout/stderr, 'oslog' for OSLog system logs",
+                  "type": "string"
+                },
+                "metadata": {
+                  "description": "Detailed OSLog metadata when includeMetadata=true. Includes: subsystem, category, pid, tid, process name, sender function/file/line, and more. Only present for kind='oslog' and when requested.",
+                  "properties": {
+                    "category": {
+                      "description": "OSLog category within the subsystem (e.g., 'networking', 'database'). Used for finer-grained filtering.",
+                      "type": "string"
+                    },
+                    "format": {
+                      "description": "OSLog format string with placeholders (e.g., 'Request failed: %{public}@')",
+                      "type": "string"
+                    },
+                    "library": {
+                      "description": "Library/framework that logged this message",
+                      "type": "string"
+                    },
+                    "messageType": {
+                      "description": "OSLog severity: 'default', 'info', 'debug', 'error', or 'fault'",
+                      "type": "string"
+                    },
+                    "pid": {
+                      "description": "Process ID that generated this log",
+                      "type": "integer"
+                    },
+                    "processName": {
+                      "description": "Name of the process that generated this log",
+                      "type": "string"
+                    },
+                    "senderFunctionName": {
+                      "description": "Function/method name that called the logging API (e.g., '-[UIViewController viewDidLoad]'). Useful for code location.",
+                      "type": "string"
+                    },
+                    "senderImagePath": {
+                      "description": "Path to the executable/library that sent this log (e.g., '/System/Library/Frameworks/UIKit.framework/UIKit')",
+                      "type": "string"
+                    },
+                    "senderImageUUID": {
+                      "description": "UUID of the sender's binary image. Used for symbolication and crash analysis.",
+                      "type": "string"
+                    },
+                    "senderSourceLine": {
+                      "description": "Line number in source file where log was called (if available)",
+                      "type": "integer"
+                    },
+                    "senderSourcePath": {
+                      "description": "Source file path where log was called (if available)",
+                      "type": "string"
+                    },
+                    "sessionUUID": {
+                      "description": "Unique identifier for the logging session",
+                      "type": "string"
+                    },
+                    "subsystem": {
+                      "description": "OSLog subsystem identifier (e.g., 'com.apple.UIKit'). Used for grouping related logs.",
+                      "type": "string"
+                    },
+                    "tid": {
+                      "description": "Thread ID that generated this log. Useful for identifying multi-threading issues.",
+                      "type": "integer"
+                    },
+                    "timestamp": {
+                      "description": "Formatted timestamp string from OSLog",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "pid",
+                    "tid"
+                  ],
+                  "type": "object"
+                },
+                "severity": {
+                  "description": "OSLog severity level: 'error', 'fault', 'info', 'debug', or 'default'. Only present for kind='oslog'. Errors and faults indicate problems.",
+                  "type": "string"
+                },
+                "timestamp": {
+                  "description": "Unix timestamp (seconds since epoch) of when this message appeared. Use this for chronological ordering and time-based analysis.",
+                  "type": "number"
+                }
+              },
+              "required": [
+                "content",
+                "kind",
+                "timestamp"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "units",
+          "totalCount",
+          "truncated",
+          "launchSessionInfo"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetCrashIssueLogs",
+      "title": "Get Crash Issue Logs",
+      "description": "    Get detailed crash logs, expert triage knowledge, and actionable recommendations for a specific crash signature.\n    Use this after GetTopCrashIssues to drill down into specific crash issues.\n    Returns raw crash log text along with domain-specific analysis guidance from expert triage documents.\n    If no `bundle_id` is provided, automatically resolves from the active scheme's target. `bundle_id` is case sensitive and capitalization matters.\n    If no `platform` is provided, automatically resolves from the app's supported platforms and the active run destination. Supported platform values: 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS'.\n    Use `is_beta` to specify TestFlight (true) or App Store (false) data. If not provided, fetches data from both release channels.",
+      "inputSchema": {
+        "properties": {
+          "app_version": {
+            "description": "The app version to filter crash logs by (e.g., 4.6). If not provided, returns logs across all versions.",
+            "type": "string"
+          },
+          "bundle_id": {
+            "description": "The bundle identifier of the app (e.g., com.apple.Playgrounds). If not provided, automatically resolved from the active scheme's target.",
+            "type": "string"
+          },
+          "is_beta": {
+            "description": "Whether to fetch TestFlight (true) or App Store (false) data. If not provided, fetches data from both release channels.",
+            "type": "boolean"
+          },
+          "platform": {
+            "description": "The platform to query (e.g., 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS'). If not provided, automatically resolved from the active run destination.",
+            "type": "string"
+          },
+          "signature_name": {
+            "description": "The human-readable crash signature name from GetTopCrashIssues",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "signature_name"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "appVersion": {
+            "description": "The app version that was queried (nil if all versions)",
+            "type": "string"
+          },
+          "bundleId": {
+            "description": "The bundle ID that was queried",
+            "type": "string"
+          },
+          "data": {
+            "description": "The crash logs and expert triage knowledge",
+            "type": "string"
+          },
+          "message": {
+            "description": "Status message about the operation",
+            "type": "string"
+          },
+          "signatureName": {
+            "description": "The crash signature name that was queried",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the API request succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "message",
+          "bundleId",
+          "signatureName"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetFieldPerformanceIssueLogs",
+      "title": "Get Field Performance Issue Logs",
+      "description": "Get detailed logs, performance data, expert triage knowledge, and actionable recommendations for specific field performance issue.\nUse this after GetTopFieldPerformanceIssues to drill down into specific performance issues.\nThis tool provides detailed performance diagnostics including stack traces, timeline data, and domain-specific analysis guidance from expert triage documents.\nSupported diagnostic types: `launches` (app launch performance), `hangs` (app hang issues), `diskwrites` (disk write performance), `energy` (CPU/energy usage).\nIf no `bundle_id` is provided, automatically resolves from the active scheme's target. `bundle_id` is case sensitive and capitalization matters.\nIf no `platform` is provided, automatically resolves from the app's supported platforms and the active run destination. Supported platform values depend on the diagnostic type (e.g., 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS').\nSome diagnostic types (e.g., energy) support both App Store and TestFlight data. Use `is_beta` to specify which release channel to query. If not provided, auto-detected from the app version.",
+      "inputSchema": {
+        "properties": {
+          "app_version": {
+            "description": "The app version (e.g., 13.14.0)",
+            "type": "string"
+          },
+          "bundle_id": {
+            "description": "The bundle identifier of the app (e.g., com.toyopagroup.picaboo). If not provided, automatically resolved from the active scheme's target.",
+            "type": "string"
+          },
+          "diagnostic_type": {
+            "description": "The type of performance diagnostic to retrieve. Supported values: 'launches', 'hangs', 'diskwrites', 'energy'",
+            "type": "string"
+          },
+          "is_beta": {
+            "description": "Whether to fetch TestFlight (true) or App Store (false) data. If not provided, auto-detected from the app version.",
+            "type": "boolean"
+          },
+          "platform": {
+            "description": "The platform to query (e.g., 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS'). Supported values depend on the diagnostic type. If not provided, automatically resolved from the active run destination.",
+            "type": "string"
+          },
+          "signature_name": {
+            "description": "The human-readable signature name from GetTopFieldPerformanceIssues",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "app_version",
+          "signature_name",
+          "diagnostic_type"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "appVersion": {
+            "description": "The app version that was queried",
+            "type": "string"
+          },
+          "bundleId": {
+            "description": "The bundle ID that was queried",
+            "type": "string"
+          },
+          "data": {
+            "description": "The formatted JSON response from the field report API",
+            "type": "string"
+          },
+          "diagnosticType": {
+            "description": "The diagnostic type that was queried",
+            "type": "string"
+          },
+          "message": {
+            "description": "Status message about the operation",
+            "type": "string"
+          },
+          "signatureName": {
+            "description": "The signature name that was queried",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the API request succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "message",
+          "bundleId",
+          "appVersion",
+          "signatureName",
+          "diagnosticType"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetFileCompilerFlags",
+      "title": "Get File Compiler Flags",
+      "description": "Gets the additional per-file compiler flags for a single source file in a specific Xcode target \u2014 the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources. Returns an empty string when the file is a member of the target with no flags set. Use UpdateFileCompilerFlags to modify flags.\n\nNote: Per-file compiler flags are uncommon \u2014 most targets configure compilation through target build settings instead. Use this tool to inspect existing per-file flags (e.g. when checking why one file in a target compiles differently from its peers, such as adopting `-fbounds-safety` for a single file).\n\nNote about Swift: Values shown for `.swift` files may not actually affect builds because the unit of compilation for Swift is a module. Prefer OTHER_SWIFT_FLAGS at the target level.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the source file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift'). An absolute or workspace-relative filesystem path is also accepted as a fallback.",
+            "type": "string"
+          },
+          "projectPath": {
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The name of the Xcode target whose build phase contains the source file.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "filePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "compilerFlags": {
+            "description": "The additional compiler flags on the file, as a single space-separated string. Empty when the file is a member of the target with no per-file flags set.",
+            "type": "string"
+          },
+          "filePath": {
+            "description": "The project-organization path of the file.",
+            "type": "string"
+          },
+          "guidance": {
+            "description": "Populated when a filesystem path was supplied and resolved to a project-organization path. Contains instructions for the agent to prefer the resolved path in subsequent calls.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The target whose per-file compiler flags were returned.",
+            "type": "string"
+          },
+          "warning": {
+            "description": "Populated when the build system is unlikely to honor per-file flags on this file (e.g. Swift sources, where the unit of compilation is a module). The flags returned are still the values stored in the project, but the agent should not assume they influence the build; consider a target-level setting instead.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "filePath",
+          "compilerFlags"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetTargetBuildSettings",
+      "title": "Get Target Build Settings",
+      "description": "Get all the Xcode build setting for a specified Xcode project target.\nAlways use this tool to get the build settings for a target.\nOnly show the target value for each build setting if the user explicitly requests.\n\nIMPORTANT: Do NOT try to parse the project.pbxproj file directly.\"",
+      "inputSchema": {
+        "properties": {
+          "projectPath": {
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The name of a given Xcode project target.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "buildSettings": {
+            "description": "An array of build settings for the named target.",
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "targetName": {
+            "description": "The real name of a Xcode project target, also known as a blueprint.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "buildSettings"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetTestList",
+      "title": "Get Test List",
+      "description": "Gets all available tests from the active scheme's active test plan. Results are limited to 100 tests. The complete list is written to fullTestListPath in grep-friendly format. Use grep with keys like TEST_TARGET, TEST_IDENTIFIER, or TEST_FILE_PATH to find specific tests.",
+      "inputSchema": {
+        "properties": {
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "The active test plan name",
+            "type": "string"
+          },
+          "counts": {
+            "description": "Aggregated test counts",
+            "properties": {
+              "disabled": {
+                "description": "Number of disabled tests",
+                "type": "integer"
+              },
+              "enabled": {
+                "description": "Number of enabled tests",
+                "type": "integer"
+              },
+              "total": {
+                "description": "Total test count",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "total",
+              "enabled",
+              "disabled"
+            ],
+            "type": "object"
+          },
+          "fullTestListPath": {
+            "description": "Path to file containing complete test list",
+            "type": "string"
+          },
+          "schemeName": {
+            "description": "The active scheme name",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Human-readable test list summary",
+            "type": "string"
+          },
+          "tests": {
+            "description": "List of tests limited to 100",
+            "items": {
+              "properties": {
+                "displayName": {
+                  "description": "Human readable test name",
+                  "type": "string"
+                },
+                "filePath": {
+                  "description": "Source file path",
+                  "type": "string"
+                },
+                "identifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                },
+                "isEnabled": {
+                  "description": "Whether the test is enabled in the test plan",
+                  "type": "boolean"
+                },
+                "lineNumber": {
+                  "description": "Line number in source file",
+                  "type": "integer"
+                },
+                "tags": {
+                  "description": "Swift Testing tags",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "identifier",
+                "displayName",
+                "isEnabled"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totalTests": {
+            "description": "Total number of tests before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether test list was truncated",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "tests",
+          "schemeName",
+          "summary",
+          "counts",
+          "truncated",
+          "totalTests",
+          "fullTestListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetTopCrashIssues",
+      "title": "Get Top Crash Issues",
+      "description": "    Retrieve the top crash signatures for an app from Apple's crash reporting service.\n    Returns crash signatures sorted by device count (number of unique devices affected) for the last 14 days.\n    Use this tool to identify and prioritize the most impactful crashes in your app.\n    If no `bundle_id` is provided, automatically resolves from the active scheme's target. `bundle_id` is case sensitive and capitalization matters.\n    If no `platform` is provided, automatically resolves from the app's supported platforms and the active run destination. Supported platform values: 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS'.\n    If no `app_version` is provided, returns crashes across all versions. If provided, filters to that specific version.\n    Use `is_beta` to specify TestFlight (true) or App Store (false) data. If not provided, returns data from both release channels.",
+      "inputSchema": {
+        "properties": {
+          "app_version": {
+            "description": "The app version to filter by (e.g., 4.6). If not provided, returns crashes across all versions for the last 14 days.",
+            "type": "string"
+          },
+          "bundle_id": {
+            "description": "The bundle identifier of the app (e.g., com.apple.Playgrounds). If not provided, automatically resolved from the active scheme's target.",
+            "type": "string"
+          },
+          "count": {
+            "description": "Number of top crash signatures to return. Use 1 when the user asks for their 'top crash' (singular). Defaults to 5 when not specified or when the user asks for 'top crashes' (plural).",
+            "type": "integer"
+          },
+          "is_beta": {
+            "description": "Whether to fetch TestFlight (true) or App Store (false) data. If not provided, returns data from both release channels.",
+            "type": "boolean"
+          },
+          "platform": {
+            "description": "The platform to query (e.g., 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS'). If not provided, automatically resolved from the active run destination.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "appVersion": {
+            "description": "The app version that was queried (nil if all versions)",
+            "type": "string"
+          },
+          "bundleId": {
+            "description": "The bundle ID that was queried",
+            "type": "string"
+          },
+          "data": {
+            "description": "The formatted JSON response with top crash signatures",
+            "type": "string"
+          },
+          "message": {
+            "description": "Status message about the operation",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the API request succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "message",
+          "bundleId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "GetTopFieldPerformanceIssues",
+      "title": "Get Top Field Performance Issues",
+      "description": "    Analyze app performance and identify performance regressions across different diagnostic types.\n    Use this tool to investigate or analyze performance issues by querying Apple's field report APIs.\n    Supported diagnostic types: `launches` (app launch performance), `hangs` (app hang issues), `diskwrites` (disk write performance), `energy` (CPU/energy usage).\n    If no `bundle_id` is provided, automatically resolves from the active scheme's target. `bundle_id` is case sensitive and capitalization matters.\n    If no `platform` is provided, automatically resolves from the app's supported platforms and the active run destination. Supported platform values depend on the diagnostic type (e.g., 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS').\n    Some diagnostic types (e.g., energy) support both App Store and TestFlight data. Use `is_beta` to specify which release channel to query. If not provided, auto-detected from the app version when possible.",
+      "inputSchema": {
+        "properties": {
+          "app_version": {
+            "description": "The app version (e.g., 4.6). If not provided, returns a list of available versions to choose from.",
+            "type": "string"
+          },
+          "bundle_id": {
+            "description": "The bundle identifier of the app (e.g., com.apple.Playgrounds). If not provided, automatically resolved from the active scheme's target.",
+            "type": "string"
+          },
+          "diagnostic_type": {
+            "description": "The type of performance diagnostic to retrieve. Supported values: 'launches', 'hangs', 'diskwrites', 'energy'",
+            "type": "string"
+          },
+          "is_beta": {
+            "description": "Whether to fetch TestFlight (true) or App Store (false) data. If not provided, auto-detected from the app version when possible. For diagnostic types that support both (e.g., energy), you will be asked to choose if it cannot be determined.",
+            "type": "boolean"
+          },
+          "platform": {
+            "description": "The platform to query (e.g., 'iOS', 'macOS', 'watchOS', 'tvOS', 'visionOS'). Supported values depend on the diagnostic type. If not provided, automatically resolved from the active run destination.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "diagnostic_type"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "appVersion": {
+            "description": "The app version that was queried (nil if version selection is needed)",
+            "type": "string"
+          },
+          "availableVersions": {
+            "description": "List of available versions when app_version was not provided. Each entry has 'version' and 'build' keys.",
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "bundleId": {
+            "description": "The bundle ID that was queried",
+            "type": "string"
+          },
+          "data": {
+            "description": "The formatted JSON response from the field report API",
+            "type": "string"
+          },
+          "diagnosticType": {
+            "description": "The diagnostic type that was queried",
+            "type": "string"
+          },
+          "message": {
+            "description": "Status message about the operation",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the API request succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "data",
+          "message",
+          "bundleId",
+          "diagnosticType"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "InvokeDebuggerCommand",
+      "title": "Invoke a Debugger Command",
+      "description": "Sends an lldb command to Xcode's active debugging session and returns the output.\nThe process must already be running with the debugger attached. You can use the\nRunProject tool with attachDebugger=true, if it isn't running and debugged already.\n\nSend any lldb command: 'bt', 'po variable', 'breakpoint set -n main', 'continue',\n'thread step-over', 'frame variable', etc. The command runs in the same lldb session\nas Xcode's debug console, so the agent and Xcode UI share the same debugging state.\n\nWhen you start using a debug session, you should call 'process status' to determine\nwhether the process is stopped or not, before calling any commands that require\nthe process to be stopped (like expressions). Do this unless you're already confident\nabout the running state.",
+      "inputSchema": {
+        "properties": {
+          "command": {
+            "description": "The lldb command to execute in Xcode's active debug session (e.g., 'bt', 'po self', 'breakpoint set -n viewDidLoad', 'continue', 'thread step-over', 'frame variable').",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "Maximum seconds to wait for the command to complete. Default: 30. Increase for commands that resume execution (e.g., 'continue').",
+            "type": "integer"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "debugSessionActive": {
+            "description": "Whether an active debug session exists. False if no app is being debugged.",
+            "type": "boolean"
+          },
+          "isWaitingForMore": {
+            "description": "True if the command timed out before completing. The command may still be executing (e.g., after 'continue'). Call again with a simple command like 'thread list' to check the state.",
+            "type": "boolean"
+          },
+          "output": {
+            "description": "The lldb output from the command. This is the same output that appears in Xcode's debug console.",
+            "type": "string"
+          },
+          "processIdentifier": {
+            "description": "The process identifier (PID) of the debugged process, if available.",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "output",
+          "debugSessionActive",
+          "isWaitingForMore"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "LocalizationPlanner",
+      "title": "Prepare For Localization",
+      "description": "Ensures the project is in a state where translations can be added. **Call this tool each time you are tasked with adding a language** to the project, or to translate an entire project. Before calling this tool, you MUST activate the `xcode-integration:translation-coordinator` skill. Do not call this tool without first loading that skill's instructions.",
+      "inputSchema": {
+        "properties": {
+          "targetLocaleIdentifier": {
+            "description": "The locale identifier for which you want to translate",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetLocaleIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "changesMade": {
+            "description": "List of changes successfully made to the project. Includes list of all String Catalogs in the project.",
+            "type": "string"
+          },
+          "nextStep": {
+            "description": "Advisory telling you what action to take next. Follow these steps to successfully localize the entire project.",
+            "type": "string"
+          },
+          "stepsFailed": {
+            "description": "Description of failed steps that require manual intervention. The user has to execute them manually. If nil, all steps succeeded.",
+            "type": "string"
+          },
+          "suggestions": {
+            "description": "Non-blocking suggestions for improving the project's localization setup. The user should consider these recommendations. Don't try to follow them yourself, it needs a user interaction.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nextStep"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RenderPreview",
+      "title": "RenderPreview",
+      "description": "Builds and renders a Preview and waits until a snapshot of the resulting UI is available.",
+      "inputSchema": {
+        "properties": {
+          "previewCanvasControlOverrides": {
+            "description": "Optional overrides for the canvas controls, only applicable to preview types that support each kind of canvas control. Use the `supportedCanvasControlOverrides` field of the output of a previous invocation of this tool to get the available canvas control overrides and their supported values.",
+            "properties": {
+              "groupItemIndex": {
+                "description": "A zero-based group item index to render for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. This parameter is only meaningful for previews that return a list of items in the `groupItemIndexes` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no index is provided and if the preview has a group item control, then a preview of the first group item is rendered. This parameter is ignored for previews that don't have an `arguments:` parameter.",
+                "type": "integer"
+              },
+              "timelineIndex": {
+                "description": "A zero-based timestop index to render for previews that vary across a timeline, such as a Widget or a Live Activity. This index represents a sequence number rather than a specific clock time. This parameter is only meaningful for previews that return a list of indexes in the `timelineIndexes` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no index is provided, the first preview in the timeline is rendered. This parameter is ignored for previews that don't have a timeline. ",
+                "type": "integer"
+              },
+              "toggleState": {
+                "description": "The boolean state of a toggle control for previews that have one, such as a Live Activity. This parameter is only meaningful for previews that return a toggle state in the `toggleState` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no state is provided, the first state in the toggle state list is rendered. This parameter is ignored for previews that don't have a toggle control.",
+                "type": "boolean"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "previewDefinitionIndexInFile": {
+            "description": "The zero based index of the #Preview macro or PreviewProvider struct definition in the source file counting from the top. Defaults to 0, i.e. the first one.",
+            "type": "integer"
+          },
+          "previewLocalizationOverride": {
+            "description": "A locale identifier to preview in (e.g. \"fr\", \"ja\"). Use a value that was returned in the `supportedLocalizations` field by a previous invocation of this tool.",
+            "type": "string"
+          },
+          "previewVariantOverrides": {
+            "description": "A dictionary mapping variant group names to variant names for any preview variants that should be overridden. Use keys and values that were returned in the `supportedPreviewVariantOverrides` field by a previous invocation of this tool for the same active scheme and run destination.",
+            "type": "object"
+          },
+          "sourceFilePath": {
+            "description": "The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "The time in seconds to wait for the rendering of the preview to complete. Defaults to 120 seconds.",
+            "type": "integer"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceFilePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "displayName": {
+            "description": "The display name of the rendered preview, matching the title shown for it in Xcode\u2019s canvas tab. For a named `#Preview(\"Some Name\")` this is the given name; for an unnamed `#Preview` it is derived from the file name; for a `PreviewProvider` it is derived from the type name.",
+            "type": "string"
+          },
+          "errors": {
+            "description": "Any errors that occurred during the preview attempt (such as input validation failures).",
+            "items": {
+              "properties": {
+                "message": {
+                  "description": "The error message with potential underlying errors included.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "previewSnapshotPath": {
+            "description": "The path to the image snapshot of the requested preview.",
+            "type": "string"
+          },
+          "renderedDestination": {
+            "description": "Describes the run destination that the preview was actually rendered against (e.g. which simulator). May differ from the workspace's currently-selected run destination if the pipeline picked a different one for this preview. Omitted if the destination could not be determined.",
+            "properties": {
+              "deviceModelName": {
+                "description": "Display name of the device model that the preview was rendered for (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d). Omitted if not known.",
+                "type": "string"
+              },
+              "platformName": {
+                "description": "Display name of the platform that the preview was rendered for (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d). Omitted if not known.",
+                "type": "string"
+              },
+              "systemVersion": {
+                "description": "Operating system version that the preview was rendered for, in major.minor[.patch] form (e.g. \u201c17.2\u201d). Omitted if not known.",
+                "type": "string"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "sourceLineNumber": {
+            "description": "The 1-based line number in the source file where the rendered preview is defined. Useful for disambiguating a preview from others that share the same display name in the same file (which Xcode\u2019s canvas shows as a \u201cLine N\u201d subtitle).",
+            "type": "integer"
+          },
+          "supportedCanvasControlOverrides": {
+            "description": "The supported canvas control overrides for this preview, which can be passed to the tool in the `previewCanvasControlOverrides` parameter in subsequent tool invocations. Contains `timelineIndexes` for previews that vary across a timeline (such as Widgets or Live Activities) and `toggleStates` for previews that have a toggle control. Omitted if the preview doesn't support any canvas control overrides.",
+            "properties": {
+              "groupItems": {
+                "description": "List of supported group items for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. The value of the `index` field of one of these items can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` input structure to choose a group item to render. Omitted if the preview doesn't have a group item control.",
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              "timelineIndexes": {
+                "description": "List of supported timeline indexes for previews that vary across a timeline, such as Widgets or Live Activities. The indexes represents sequence numbers rather than specific times. Omitted if the preview doesn't have a timeline control.",
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              "toggleStates": {
+                "description": "List of supported toggle states, for previews that have toggle control. Omitted if the preview doesn't have a toggle control.",
+                "items": {
+                  "type": "boolean"
+                },
+                "type": "array"
+              }
+            },
+            "required": [],
+            "type": "object"
+          },
+          "supportedLocalizations": {
+            "description": "The locale identifiers supported by the workspace (e.g. [\"en\", \"fr\", \"ja\"]), which can be passed to the tool in the `previewLocalizationOverride` parameter in subsequent tool invocations to preview in a specific language. Do not call this tool in parallel with other invocations when this parameter is provided.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "supportedPreviewVariantOverrides": {
+            "description": "The supported preview variant overrides, which can be passed to the tool in the `previewVariantOverrides` parameter in subsequent tool invocations. The keys are the names of variant groups that can be overridden, and the values are the names of the variants that are supported for that group.",
+            "type": "object"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RunAllTests",
+      "title": "Run All Tests",
+      "description": "Runs all tests from the active scheme's active test plan",
+      "inputSchema": {
+        "properties": {
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "Active test plan name",
+            "type": "string"
+          },
+          "counts": {
+            "description": "Test execution counts",
+            "properties": {
+              "expectedFailures": {
+                "description": "Number of expected failures",
+                "type": "integer"
+              },
+              "failed": {
+                "description": "Number of failed tests",
+                "type": "integer"
+              },
+              "notRun": {
+                "description": "Number of tests not run",
+                "type": "integer"
+              },
+              "passed": {
+                "description": "Number of passed tests",
+                "type": "integer"
+              },
+              "skipped": {
+                "description": "Number of skipped tests",
+                "type": "integer"
+              },
+              "total": {
+                "description": "Total test count",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "total",
+              "passed",
+              "failed",
+              "skipped",
+              "expectedFailures",
+              "notRun"
+            ],
+            "type": "object"
+          },
+          "fullConsoleLogsPath": {
+            "description": "A text file path containing all logs that would be printed in the console from `print`, `NSLog`, etc. during test build and execution.",
+            "type": "string"
+          },
+          "fullSummaryPath": {
+            "description": "A text file path containing all test results and complete issue details in textual form",
+            "type": "string"
+          },
+          "message": {
+            "description": "Additional information about truncation",
+            "type": "string"
+          },
+          "results": {
+            "description": "Results for each test (truncated at 100, failures shown first)",
+            "items": {
+              "properties": {
+                "displayName": {
+                  "description": "Human-readable test name",
+                  "type": "string"
+                },
+                "errorMessages": {
+                  "description": "Error messages",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "identifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "Execution state",
+                  "type": "string"
+                },
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "identifier",
+                "displayName",
+                "state",
+                "errorMessages"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "schemeName": {
+            "description": "Active scheme name",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Test execution summary",
+            "type": "string"
+          },
+          "totalResults": {
+            "description": "Total number of test results before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 results",
+            "type": "boolean"
+          },
+          "xcresultBundlePath": {
+            "description": "Path to the .xcresult bundle produced by the test run. Can be parsed with xcresulttool. If code coverage is enabled, xccov can extract coverage data from this bundle.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "counts",
+          "results",
+          "schemeName",
+          "truncated",
+          "totalResults",
+          "fullSummaryPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RunCodeSnippet",
+      "title": "Run Code Snippet",
+      "description": "Builds and runs a snippet of code in the context of a specific file and waits until results are available. This tool is available for source files in targets that build applications, frameworks, libraries, or command line executables. The output consists of the console output generated by the `print` statements contained in the provided snippet.",
+      "inputSchema": {
+        "properties": {
+          "codeSnippet": {
+            "description": "The code snippet that should be run within the context of the specified Swift file.",
+            "type": "string"
+          },
+          "purpose": {
+            "description": "A short human-readable description of the purpose of running this code snippet. Do NOT use the word 'test' in this string, because that is misleading and could make the user think that this functionality is related to testing.",
+            "type": "string"
+          },
+          "sourceFilePath": {
+            "description": "The path to a Swift source file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift') whose context the code snippet will have access to (including `fileprivate` declarations).",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "The time in seconds to wait for the running of the snippet to complete. Defaults to 600 seconds.",
+            "type": "integer"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "codeSnippet",
+          "sourceFilePath",
+          "purpose"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "error": {
+            "description": "Any error that occurred while trying to run the snippet, if applicable. This could be a problem compiling the snippet or it could be a runtime error.",
+            "properties": {
+              "detailsPath": {
+                "description": "The path of an optional file that contains all the details of the error.",
+                "type": "string"
+              },
+              "message": {
+                "description": "A very short message describing the error.",
+                "type": "string"
+              },
+              "recoveryAdvice": {
+                "description": "An optional message providing advice on how to resolve the error.",
+                "type": "string"
+              },
+              "summary": {
+                "description": "A longer summary of the error and (if known) its cause.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "message",
+              "summary"
+            ],
+            "type": "object"
+          },
+          "executionResults": {
+            "description": "The console output generated by the `print` statements contained in the provided snippet.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RunProject",
+      "title": "Run Project",
+      "description": "Builds and runs the current scheme in Xcode, equivalent to pressing the Run button (Cmd+R).\nReturns when the app has launched and is running.\nUse the InvokeDebuggerCommand tool to debug the app (make sure to run with attachDebugger=true).\nUse the GetConsoleOutput tool to read the app's console output.\nUse the StopProject tool to stop the app, when finished.",
+      "inputSchema": {
+        "properties": {
+          "attachDebugger": {
+            "description": "Whether to attach the debugger to the launched process. Defaults to false.",
+            "type": "boolean"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "buildErrors": {
+            "description": "List of build errors, if the build failed",
+            "items": {
+              "properties": {
+                "classification": {
+                  "description": "The type of error (error, warning, etc.)",
+                  "type": "string"
+                },
+                "filePath": {
+                  "description": "The file path where the error occurred",
+                  "type": "string"
+                },
+                "lineNumber": {
+                  "description": "The line number where the error occurred",
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "The error message",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "classification",
+                "message"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "elapsedTime": {
+            "description": "The time it took to build and launch, in seconds",
+            "type": "number"
+          },
+          "fullLogPath": {
+            "description": "Path of the full build log in textual format",
+            "type": "string"
+          },
+          "launchSessionReference": {
+            "description": "A reference to the launch session that can be passed to GetConsoleOutput to read the app's output",
+            "type": "string"
+          },
+          "processIdentifier": {
+            "description": "The process identifier (PID) of the launched app",
+            "type": "integer"
+          },
+          "runResult": {
+            "description": "The message indicating the result of the run operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "runResult",
+          "buildErrors",
+          "fullLogPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "RunSomeTests",
+      "title": "Run Some Tests",
+      "description": "Runs specific tests using the active scheme's active test plan",
+      "inputSchema": {
+        "properties": {
+          "tests": {
+            "description": "Array of test specifiers to run. Each specifier contains 'targetName' and 'testIdentifier' fields. Use GetTestList action to discover available tests and their identifiers, then extract the 'targetName' and 'identifier' fields from the TestActionInfo results to construct TestActionSpecifier objects.",
+            "items": {
+              "properties": {
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                },
+                "testIdentifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "testIdentifier"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tests"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "Active test plan name",
+            "type": "string"
+          },
+          "counts": {
+            "description": "Test execution counts",
+            "properties": {
+              "expectedFailures": {
+                "description": "Number of expected failures",
+                "type": "integer"
+              },
+              "failed": {
+                "description": "Number of failed tests",
+                "type": "integer"
+              },
+              "notRun": {
+                "description": "Number of tests not run",
+                "type": "integer"
+              },
+              "passed": {
+                "description": "Number of passed tests",
+                "type": "integer"
+              },
+              "skipped": {
+                "description": "Number of skipped tests",
+                "type": "integer"
+              },
+              "total": {
+                "description": "Total test count",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "total",
+              "passed",
+              "failed",
+              "skipped",
+              "expectedFailures",
+              "notRun"
+            ],
+            "type": "object"
+          },
+          "fullConsoleLogsPath": {
+            "description": "A text file path containing all logs that would be printed in the console from `print`, `NSLog`, etc. during test build and execution.",
+            "type": "string"
+          },
+          "fullSummaryPath": {
+            "description": "A text file path containing all test results and complete issue details in textual form",
+            "type": "string"
+          },
+          "message": {
+            "description": "Additional information about truncation",
+            "type": "string"
+          },
+          "results": {
+            "description": "Results for each test (truncated at 100, failures shown first)",
+            "items": {
+              "properties": {
+                "displayName": {
+                  "description": "Human-readable test name",
+                  "type": "string"
+                },
+                "errorMessages": {
+                  "description": "Error messages",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "identifier": {
+                  "description": "Test identifier in XCTestIdentifier format",
+                  "type": "string"
+                },
+                "state": {
+                  "description": "Execution state",
+                  "type": "string"
+                },
+                "targetName": {
+                  "description": "The test target name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "targetName",
+                "identifier",
+                "displayName",
+                "state",
+                "errorMessages"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "schemeName": {
+            "description": "Active scheme name",
+            "type": "string"
+          },
+          "summary": {
+            "description": "Test execution summary",
+            "type": "string"
+          },
+          "totalResults": {
+            "description": "Total number of test results before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 results",
+            "type": "boolean"
+          },
+          "xcresultBundlePath": {
+            "description": "Path to the .xcresult bundle produced by the test run. Can be parsed with xcresulttool. If code coverage is enabled, xccov can extract coverage data from this bundle.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "counts",
+          "results",
+          "schemeName",
+          "truncated",
+          "totalResults",
+          "fullSummaryPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "StopProject",
+      "title": "Stop Project",
+      "description": "Stops the currently running app in Xcode, equivalent to pressing the Stop button (Cmd+.).\nIf no app is currently running, reports that there is nothing to stop.",
+      "inputSchema": {
+        "properties": {
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "processIdentifier": {
+            "description": "The process identifier (PID) of the app that was stopped",
+            "type": "integer"
+          },
+          "stopResult": {
+            "description": "The result of the stop operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stopResult"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "StringCatalogContext",
+      "title": "Get String Context",
+      "description": "Returns context and the source language value for a given string in the String Catalog. The sourceValues field contains the text that must be translated. Before calling this tool, you MUST activate the `xcode-integration:translation` skill. Do not call this tool without first loading that skill's instructions.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the String Catalog",
+            "type": "string"
+          },
+          "stringKey": {
+            "description": "String key for which to get context for",
+            "type": "string"
+          },
+          "targetLocaleIdentifier": {
+            "description": "The locale identifier for which you want to translate",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filePath",
+          "stringKey",
+          "targetLocaleIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "appearances": {
+            "description": "Hints about how this string is displayed in the UI. Includes element type (button, label) and framework (SwiftUI, UIKit, AppKit). Null if appearance data unavailable.",
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "comment": {
+            "description": "Comment from the String Catalog, if present",
+            "type": "string"
+          },
+          "isStringSet": {
+            "description": "Whether the string is a string set (array of values). Only set for string sets.",
+            "type": "boolean"
+          },
+          "nextSteps": {
+            "description": "Suggestions of what tool to use next",
+            "type": "string"
+          },
+          "relevantPluralCases": {
+            "description": "If the string contains numerical format specifiers, this lists the relevant plural cases for the target locale (e.g., ['zero', 'one', 'other']). Absent when this string doesn't require any pluralization.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "shouldTranslate": {
+            "description": "Whether this string should be translated (false means 'DO NOT TRANSLATE')",
+            "type": "boolean"
+          },
+          "similarStrings": {
+            "description": "Similar strings found in other String Catalogs in the workspace, useful for understanding translation patterns. Keep your translation similar to these strings and learn terminology and formality used in this project.",
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "sourcePluralCasesToAdd": {
+            "description": "Plural cases for the SOURCE locale that you should add BEFORE translating the target. Absent when the source is already plural-varied or when no pluralization is needed.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sourceValues": {
+            "description": "The source language values that you MUST translate into the target locale. Contains the text to translate \u2014 do NOT translate the key.",
+            "properties": {
+              "setValues": {
+                "description": "For string sets: the source language values. Each one must be translated. Only set for string sets",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "sourceLocaleIdentifier": {
+                "description": "The source locale identifier.",
+                "type": "string"
+              },
+              "value": {
+                "description": "The source language value that MUST be translated. This is the text to translate, NOT the key",
+                "type": "string"
+              },
+              "variationDescription": {
+                "description": "For varied strings: human-readable description of the source variation tree showing all variants that need translation",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sourceLocaleIdentifier"
+            ],
+            "type": "object"
+          },
+          "supportedDevices": {
+            "description": "The devices this String Catalog builds for (e.g., device.iphone, device.mac). Varying a string by device is optional and rarely needed. Only consider adding device variations when the string contains a reference to tapping or clicking, or when it mentions a specific device name like \"on your iPhone\". Most strings do not need device variations.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "translations": {
+            "description": "Existing translations for this string in locales related to the target locale",
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "usageDataUnavailable": {
+            "description": "Informational message when usage data cannot be retrieved. Contains guidance on how to proceed (e.g., build project). Absent when usage data is successfully retrieved.",
+            "type": "string"
+          },
+          "usageLocations": {
+            "description": "Locations in source code where this string is used, including file paths, line numbers, and column numbers. Use this information to __always__ check the code at these locations in the project to learn more about HOW the string is used in the codebase. This is a vital clue for a better understanding of the string's meaning.",
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "sourceValues",
+          "shouldTranslate",
+          "translations",
+          "usageLocations",
+          "similarStrings",
+          "nextSteps"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "StringCatalogEdit",
+      "title": "Insert Translation",
+      "description": "Inserts a translation for a given locale into a String Catalog. Before calling this tool, you MUST activate the `xcode-integration:translation` skill. Do not call this tool without first loading that skill's instructions.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the String Catalog",
+            "type": "string"
+          },
+          "stringKey": {
+            "description": "String key to translate",
+            "type": "string"
+          },
+          "stringSetTranslation": {
+            "description": "Array of translated values for string sets. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "targetLocaleIdentifier": {
+            "description": "Identifier of the locale for which to insert the given translation",
+            "type": "string"
+          },
+          "templateTranslation": {
+            "description": "Translation with template + substitutions for varying a string by plural or for translating a string that is already varied by plural. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+            "properties": {
+              "substitutions": {
+                "description": "Array of substitution definitions",
+                "items": {
+                  "properties": {
+                    "argNum": {
+                      "description": "Argument number corresponding to the format specifier position in the original string",
+                      "type": "integer"
+                    },
+                    "formatSpecifier": {
+                      "description": "Format specifier type without %.",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Name of the substitution placeholder",
+                      "type": "string"
+                    },
+                    "variants": {
+                      "description": "Dictionary mapping variation paths to translated values. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "argNum",
+                    "formatSpecifier",
+                    "variants"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "template": {
+                "description": "Template string containing substitution references. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+                "type": "string"
+              }
+            },
+            "required": [
+              "template",
+              "substitutions"
+            ],
+            "type": "object"
+          },
+          "translation": {
+            "description": "Simple string translation for non-varied strings. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c). Refer to the `xcode-integration:translation` skill for details",
+            "type": "string"
+          },
+          "variationTranslation": {
+            "description": "Variation structure for strings with top-level plural, device, or width variations. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+            "properties": {
+              "substitutions": {
+                "description": "Optional array of substitution definitions for templates that reference substitutions. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+                "items": {
+                  "properties": {
+                    "argNum": {
+                      "description": "Argument number corresponding to the format specifier position in the original string",
+                      "type": "integer"
+                    },
+                    "formatSpecifier": {
+                      "description": "Format specifier type without %.",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "Name of the substitution placeholder",
+                      "type": "string"
+                    },
+                    "variants": {
+                      "description": "Dictionary mapping variation paths to translated values. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "argNum",
+                    "formatSpecifier",
+                    "variants"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "topLevelVariation": {
+                "description": "Dictionary mapping variation paths to template strings or translations. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
+                "type": "object"
+              }
+            },
+            "required": [
+              "topLevelVariation"
+            ],
+            "type": "object"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filePath",
+          "stringKey",
+          "targetLocaleIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "message": {
+            "description": "Success or error message",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the translation was successfully inserted",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "StringCatalogRead",
+      "title": "Read String Catalog",
+      "description": "Returns string keys grouped by translation state for the requested locale. Before calling this tool, you MUST activate the `xcode-integration:translation-coordinator` skill. Do not call this tool without first loading that skill's instructions.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the String Catalog",
+            "type": "string"
+          },
+          "keyLimit": {
+            "description": "Maximum number of keys to return",
+            "type": "integer"
+          },
+          "offset": {
+            "description": "Number of keys to skip before returning results",
+            "type": "integer"
+          },
+          "requestedState": {
+            "description": "The translation state to retrieve keys for",
+            "type": "string"
+          },
+          "targetLocaleIdentifier": {
+            "description": "Locale identifier to check translations for",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filePath",
+          "targetLocaleIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "keys": {
+            "description": "Array of string keys in the requested state. Curly apostrophes and quotes are escaped (e.g., \\u2019 for curly apostrophe, \\u201C for curly quote).",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "machineTranslatedCount": {
+            "description": "Number of machine-translated strings for this locale",
+            "type": "integer"
+          },
+          "needsReviewCount": {
+            "description": "Number of strings marked as needing review for this locale",
+            "type": "integer"
+          },
+          "newCount": {
+            "description": "Number of strings that are untranslated for this locale",
+            "type": "integer"
+          },
+          "nextStep": {
+            "description": "Suggestion of what tool to use next",
+            "type": "string"
+          },
+          "requestedState": {
+            "description": "The requested state bucket, or null if not requested",
+            "type": "string"
+          },
+          "returnedCount": {
+            "description": "Number of keys returned after applying pagination",
+            "type": "integer"
+          },
+          "totalForRequestedState": {
+            "description": "Total number of keys in the requested state bucket before pagination, or null if not requested",
+            "type": "integer"
+          },
+          "translatedCount": {
+            "description": "Number of human-translated strings for this locale",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "newCount",
+          "needsReviewCount",
+          "translatedCount",
+          "machineTranslatedCount",
+          "nextStep"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "UpdateFileCompilerFlags",
+      "title": "Update File Compiler Flags",
+      "description": "Updates, appends or deletes the additional per-file compiler flags for a single source file in a specific Xcode target \u2014 the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources.\n\nNote: Per-file compiler flags should never be used when target build settings would suffice. Only use per-file compiler flags sparingly, when adding a flag to a specific file is absolutely required and is the only way to solve a problem (e.g. incrementally adopting `-fbounds-safety` by applying it to a single file only). Prefer UpdateTargetBuildSetting in any other case.\n\nAlways use this tool to update per-file compiler flags \u2014 do not edit project.pbxproj directly.\n\nNote about Swift: Per-file compiler flags on Swift sources are typically ignored by the build system because the unit of compilation for Swift is a module. The value still round-trips through the project, but it may not affect builds. Prefer OTHER_SWIFT_FLAGS at the target level (use UpdateTargetBuildSetting).",
+      "inputSchema": {
+        "properties": {
+          "appendValue": {
+            "description": "Append the value to any existing compiler flags (separated by a single space) instead of replacing them. Has no effect when 'compilerFlags' is omitted.",
+            "type": "boolean"
+          },
+          "compilerFlags": {
+            "description": "The additional compiler flags to set on the file, as a single space-separated string (e.g. \"-DFOO=1 -Wno-unused-variable\"). To delete all per-file compiler flags for the file, omit this property.",
+            "type": "string"
+          },
+          "filePath": {
+            "description": "The path to the source file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift'). An absolute or workspace-relative filesystem path is also accepted as a fallback.",
+            "type": "string"
+          },
+          "projectPath": {
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The name of the Xcode target whose build phase contains the source file.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "filePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "compilerFlags": {
+            "description": "The compiler flags now set on the file, as a single space-separated string. Empty when the file has no per-file flags set after the update.",
+            "type": "string"
+          },
+          "filePath": {
+            "description": "The project-organization path of the file.",
+            "type": "string"
+          },
+          "guidance": {
+            "description": "Populated when a filesystem path was supplied for filePath or projectPath and resolved to a project-organization path. Contains instructions for the agent to prefer the resolved path in subsequent calls.",
+            "type": "string"
+          },
+          "previousFlags": {
+            "description": "The compiler flags that were set on the file before this update, as a single space-separated string. Empty when no flags were set previously. Useful for confirming what changed without an extra GetFileCompilerFlags call.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The target whose per-file compiler flags were updated.",
+            "type": "string"
+          },
+          "warning": {
+            "description": "Populated when the change was applied but the build system is unlikely to honor it (e.g. per-file flags on Swift sources, where the unit of compilation is a module). The flags are still written to the project file so the value reflects the agent's intent, but the agent should consider a target-level alternative.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "filePath",
+          "compilerFlags",
+          "previousFlags"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "UpdateTargetBuildSetting",
+      "title": "Update Target Build Setting",
+      "description": "Updates, appends or deletes the named build setting for the specified Xcode project target.\nAlways use this tool to update/change the build settings for a target.\nIf you need to get build settings, always use the GetTargetBuildSettings tool.\n\nIMPORTANT: Do NOT try to modify the project.pbxproj file directly.\nIMPORTANT: Do NOT try to read the project.pbxproj file directly; use the GetTargetBuildSettings tool instead.\"",
+      "inputSchema": {
+        "properties": {
+          "appendValue": {
+            "description": "Append the value instead of replacing the current value.",
+            "type": "boolean"
+          },
+          "buildSettingName": {
+            "description": "The build setting name to update or add.",
+            "type": "string"
+          },
+          "buildSettingValue": {
+            "description": "The value to be added to build settings.\nDo not convert \"NO\" values to \"false\".\nTo delete the build setting instead, just skip this property.",
+            "type": "string"
+          },
+          "projectPath": {
+            "description": "The project-organization path of the .xcodeproj that owns the target (e.g., 'MyApp/MyApp.xcodeproj'). Only needed when the same target name exists in multiple projects in the workspace; omit otherwise.",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The name of a given Xcode project target.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "buildSettingName"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeCloseWorkspace",
+      "title": "Close Workspace",
+      "description": "Closes a workspace that was opened with XcodeOpenWorkspace, identified by its workspace identifier.",
+      "inputSchema": {
+        "properties": {
+          "workspaceIdentifier": {
+            "description": "The identifier of the workspace to close (as returned by XcodeOpenWorkspace or XcodeListWorkspaces)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceIdentifier"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "message": {
+            "description": "Confirmation message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeGlob",
+      "title": "Search Files",
+      "description": "Finds files in the Xcode project structure matching wildcard patterns. Works on Xcode project organization, not filesystem structure. Example patterns: '*.swift', '**/*.json', 'src/**/*.{swift,m}'. If no pattern is provided, defaults to '**/*' (all files).",
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Which project directory to search in (optional, defaults to root)",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "File matching pattern using wildcards (* ** ? [abc] {swift,m}). Examples: '*.swift', '**/*.json', 'src/**/*.{swift,m}'. Defaults to '**/*' if not provided.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "matches": {
+            "description": "List of matching file paths in the project structure (truncated at 100), sorted by most recently modified first",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "message": {
+            "description": "Optional message with additional information about the search results",
+            "type": "string"
+          },
+          "packageDependencies": {
+            "description": "Names of package dependencies whose files are included in results",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pattern": {
+            "description": "The pattern that was searched for",
+            "type": "string"
+          },
+          "searchPath": {
+            "description": "The project path that was searched",
+            "type": "string"
+          },
+          "totalFound": {
+            "description": "Total number of files found before truncation",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to exceeding 100 files",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "matches",
+          "pattern",
+          "searchPath",
+          "truncated",
+          "totalFound"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeGrep",
+      "title": "Search Content",
+      "description": "Searches for text patterns in files within the Xcode project structure using regex. Works on Xcode project organization, not filesystem structure. CRITICAL: Must include a 'pattern' argument - this tool will fail without it. Input pattern uses standard regex syntax, not JSON escaping. To find \\d in source code, use pattern \\\\d. Output results are JSON-encoded e.g. backslashes, quotes, and newlines appear escaped (\\\\, \\\", \\n).",
+      "inputSchema": {
+        "properties": {
+          "glob": {
+            "description": "Only search files matching this pattern",
+            "type": "string"
+          },
+          "headLimit": {
+            "description": "Stop after N results",
+            "type": "integer"
+          },
+          "ignoreCase": {
+            "description": "Ignore case when matching",
+            "type": "boolean"
+          },
+          "linesAfter": {
+            "description": "Show N lines after each match for context",
+            "type": "integer"
+          },
+          "linesBefore": {
+            "description": "Show N lines before each match for context",
+            "type": "integer"
+          },
+          "linesContext": {
+            "description": "Show N lines both before and after each match",
+            "type": "integer"
+          },
+          "multiline": {
+            "description": "Allow patterns to span multiple lines",
+            "type": "boolean"
+          },
+          "outputMode": {
+            "description": "What to return: content, files_with_matches, or count (default: files_with_matches)",
+            "enum": [
+              "content",
+              "filesWithMatches",
+              "count"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "description": "Where to search - file or directory in project (defaults to root)",
+            "type": "string"
+          },
+          "pattern": {
+            "description": "Text to search for using regex. REQUIRED: Must include a 'pattern' argument - this tool will fail without it.",
+            "type": "string"
+          },
+          "showLineNumbers": {
+            "description": "Show line numbers with results (content mode only)",
+            "type": "boolean"
+          },
+          "type": {
+            "description": "Shortcut for common file types (swift, js, py, etc.)",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "matchCount": {
+            "description": "Total number of matches found",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Additional information about the search results",
+            "type": "string"
+          },
+          "packageDependencies": {
+            "description": "Names of package dependencies whose files are included in results",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "pattern": {
+            "description": "The pattern that was searched for",
+            "type": "string"
+          },
+          "results": {
+            "description": "Search results based on output mode",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "searchPath": {
+            "description": "The project path that was searched",
+            "type": "string"
+          },
+          "truncated": {
+            "description": "Whether results were truncated due to limits",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "results",
+          "pattern",
+          "searchPath",
+          "matchCount",
+          "truncated"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeLS",
+      "title": "List Directory Contents",
+      "description": "Lists files and directories in the Xcode project structure at the specified path. Works on Xcode project organization, not filesystem structure.",
+      "inputSchema": {
+        "properties": {
+          "ignore": {
+            "description": "Skip files/folders matching these patterns",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "path": {
+            "description": "The project path to browse (e.g., 'ProjectName/Sources/')",
+            "type": "string"
+          },
+          "recursive": {
+            "description": "Recursively list all files (truncated to 100 lines). Default: true",
+            "type": "boolean"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "items": {
+            "description": "List of files and directories at the specified path",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "message": {
+            "description": "Optional message about the operation",
+            "type": "string"
+          },
+          "packageDependencies": {
+            "description": "Names of items that are package dependencies rather than regular project directories",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "path": {
+            "description": "The resolved project path that was browsed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "path"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListRunDestinations",
+      "title": "List Run Destinations",
+      "description": "Lists run destinations available for the currently active scheme, grouped the same way the Xcode picker groups them (Devices, Simulators, Build, Incompatible, etc.), and identifies which one is active. Each entry includes the destination's `displayTitle` (matching the Xcode toolbar label and the unambiguous handle for XcodeSwitchRunDestination), its group, eligibility status, platform, OS version, architecture, and SDK display name. By default, destinations in the 'Incompatible' group are omitted from the inline list to save context (the `groups` summary still reports their count and the full file at fullRunDestinationListPath still contains them). Pass `includeIncompatible: true` to include them inline. The inline list is capped at 40 entries in both modes, with the active destination listed first; the complete list is always available via fullRunDestinationListPath.",
+      "inputSchema": {
+        "properties": {
+          "includeIncompatible": {
+            "description": "When true, destinations in the 'Incompatible' group are included in the inline `destinations` array. When false or omitted (the default), they are skipped to save context but are still counted in the `groups` summary and listed in fullRunDestinationListPath.",
+            "type": "boolean"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeDestinationDisplayTitle": {
+            "description": "The disambiguated displayTitle of the currently active run destination, or null if no destination is active. This value round-trips: pass it back to XcodeSwitchRunDestination to re-select the same destination.",
+            "type": "string"
+          },
+          "activeSchemeName": {
+            "description": "The name of the currently active scheme, or null if no scheme is active. Run destinations are scoped to the active scheme.",
+            "type": "string"
+          },
+          "destinations": {
+            "description": "Inline run destination entries. By default the 'Incompatible' group is omitted; pass `includeIncompatible: true` to include it. Always capped at 40 entries, with the active destination listed first.",
+            "items": {
+              "properties": {
+                "architecture": {
+                  "description": "The destination's target architecture (for example, 'arm64' or 'x86_64').",
+                  "type": "string"
+                },
+                "displayTitle": {
+                  "description": "The destination's name as shown in the Xcode picker, including any disambiguation suffix when needed. This is the handle to pass back to XcodeSwitchRunDestination \u2014 it always round-trips.",
+                  "type": "string"
+                },
+                "group": {
+                  "description": "The destination's group as shown in the picker (for example: 'Devices', 'Simulators', 'Virtual Machines', 'Build', 'Incompatible').",
+                  "type": "string"
+                },
+                "ineligibilityMessage": {
+                  "description": "Human-readable explanation of why this destination is ineligible, if any.",
+                  "type": "string"
+                },
+                "isActive": {
+                  "description": "True if this is the currently active run destination.",
+                  "type": "boolean"
+                },
+                "isEligible": {
+                  "description": "True if this destination can be used to build, run, or test the active scheme. Destinations in the 'Incompatible' group return false.",
+                  "type": "boolean"
+                },
+                "isGenericDevice": {
+                  "description": "True if this destination represents a generic build target such as 'Any iOS Device'.",
+                  "type": "boolean"
+                },
+                "isSimulator": {
+                  "description": "True if this destination represents a simulator device.",
+                  "type": "boolean"
+                },
+                "osVersion": {
+                  "description": "The operating system version of the destination's device (for example, '18.4'), if known.",
+                  "type": "string"
+                },
+                "platformIdentifier": {
+                  "description": "The platform identifier of the destination's device (for example, 'com.apple.platform.iphonesimulator').",
+                  "type": "string"
+                },
+                "sdkDisplayName": {
+                  "description": "The display name of the destination's target SDK (for example, 'iOS 18.4 Simulator').",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "displayTitle",
+                "group",
+                "isActive",
+                "isEligible",
+                "isSimulator",
+                "isGenericDevice"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "fullRunDestinationListPath": {
+            "description": "Path to a file containing every destination \u2014 including incompatible ones \u2014 in grep-friendly format.",
+            "type": "string"
+          },
+          "groups": {
+            "description": "Summary of every destination group in picker order, each with a name and total count (independent of any inline filtering).",
+            "items": {
+              "properties": {
+                "count": {
+                  "description": "The number of run destinations in this group (independent of inline filtering).",
+                  "type": "integer"
+                },
+                "name": {
+                  "description": "The group's display name as shown in the picker.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "count"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "message": {
+            "description": "Optional message explaining why the inline list differs from totalDestinations or noting other context (such as no active scheme).",
+            "type": "string"
+          },
+          "totalDestinations": {
+            "description": "Total number of destinations available for the active scheme, before any filtering or truncation.",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "True if the inline `destinations` array contains fewer entries than `totalDestinations` (because of incompatible filtering, the 40-entry cap, or both).",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "destinations",
+          "groups",
+          "truncated",
+          "totalDestinations",
+          "fullRunDestinationListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListSchemes",
+      "title": "List Schemes",
+      "description": "Lists all schemes available in the current Xcode workspace and identifies which one is currently\nactive. Each entry includes the scheme's name, its sharing status (shared vs. user-only), and the\nproject or workspace container that holds it. Inline results are limited to 100\nschemes with the active scheme listed first; the complete list is always written to\nfullSchemeListPath in grep-friendly format with keys like SCHEME_NAME, DISAMBIGUATED_NAME,\nIS_ACTIVE, IS_SHARED, and CONTAINER_NAME. Use the XcodeSwitchScheme tool to change the active scheme.",
+      "inputSchema": {
+        "properties": {
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeSchemeName": {
+            "description": "The name of the currently active scheme, or null if no scheme is active.",
+            "type": "string"
+          },
+          "fullSchemeListPath": {
+            "description": "Path to a file containing the complete scheme list in grep-friendly format.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional message with additional information about truncation.",
+            "type": "string"
+          },
+          "schemes": {
+            "description": "Visible, non-transient schemes in the workspace, limited to 100 entries with the active scheme listed first.",
+            "items": {
+              "properties": {
+                "containerName": {
+                  "description": "The display name of the project or workspace container that hosts this scheme.",
+                  "type": "string"
+                },
+                "disambiguatedName": {
+                  "description": "The scheme's name with the container name appended in parentheses when multiple schemes share the same name. Pass this value to XcodeSwitchScheme to resolve ambiguity.",
+                  "type": "string"
+                },
+                "isActive": {
+                  "description": "True if this is the currently active scheme.",
+                  "type": "boolean"
+                },
+                "isShared": {
+                  "description": "True if this scheme is shared (committed to source control alongside the project); false if it is a user-only scheme.",
+                  "type": "boolean"
+                },
+                "name": {
+                  "description": "The scheme's name as it appears in the Xcode scheme picker.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "disambiguatedName",
+                "isActive",
+                "isShared"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totalSchemes": {
+            "description": "Total number of schemes before truncation.",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "True if the inline schemes array was truncated because more than 100 schemes exist.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "schemes",
+          "truncated",
+          "totalSchemes",
+          "fullSchemeListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListTargets",
+      "title": "List Targets",
+      "description": "Lists targets in the current Xcode workspace, optionally scoped to a single project. Each entry\nincludes the target's name, the project that contains it, its product type (e.g. application,\nframework, unit-test bundle), and role flags (isTestTarget, supportsHostingTests, isAppExtension,\nisAggregate). Hidden synthetic blueprints and Swift package products are not listed. \nPass the containingProjectPath value back to GetTargetBuildSettings, UpdateTargetBuildSetting,\nor other target-aware tools to operate on a specific project. Inline results are\ncapped at 100 entries; the complete list is always written to fullTargetListPath in\ngrep-friendly format with keys like TARGET_NAME, CONTAINING_PROJECT, PRODUCT_TYPE_IDENTIFIER,\nPRODUCT_TYPE_NAME, IS_TEST_TARGET, SUPPORTS_HOSTING_TESTS, IS_APP_EXTENSION, IS_AGGREGATE.",
+      "inputSchema": {
+        "properties": {
+          "productTypeFilter": {
+            "description": "Optional list of product-type identifiers. When supplied, only targets whose productTypeIdentifier matches one of the entries are returned. Each entry is matched case-insensitively against either the full identifier (e.g. 'com.apple.product-type.application') or its suffix after 'com.apple.product-type.' (e.g. 'application', 'framework', 'framework.static', 'library.static', 'bundle.unit-test', 'bundle.ui-testing', 'app-extension', 'extensionkit-extension'). Aggregate targets \u2014 which have no productTypeIdentifier \u2014 are excluded by any non-empty filter; pass an empty array or omit the parameter to keep them.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "projectPath": {
+            "description": "Optional project-organization or filesystem path to a specific .xcodeproj container in the workspace (e.g. 'MyApp/MyApp.xcodeproj' or 'MyApp/MyApp'). When supplied, the listing is restricted to targets owned by that project. Both forms \u2014 with and without the .xcodeproj suffix \u2014 are accepted.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "fullTargetListPath": {
+            "description": "Path to a file containing the complete target list in grep-friendly format.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional message with additional information about truncation.",
+            "type": "string"
+          },
+          "targets": {
+            "description": "Visible, project-owned targets matching the scope and productTypeFilter, capped at 100 entries. Sorted by containingProjectPath, then by name (alphabetical) \u2014 predictable for both inline reading and truncation.",
+            "items": {
+              "properties": {
+                "containingProjectPath": {
+                  "description": "Canonical project-organization path of the .xcodeproj that owns this target (e.g. 'MyApp/MyApp.xcodeproj'). Null only for the rare case where the path could not be canonicalized.",
+                  "type": "string"
+                },
+                "isAggregate": {
+                  "description": "True for targets that have no productTypeIdentifier of their own. Covers both classic aggregate targets and external-build / legacy targets; treat this flag as 'no product type' rather than strictly 'aggregate'.",
+                  "type": "boolean"
+                },
+                "isAppExtension": {
+                  "description": "True for app extensions (classic appex and ExtensionKit variants).",
+                  "type": "boolean"
+                },
+                "isTestTarget": {
+                  "description": "True if the target is a test bundle.",
+                  "type": "boolean"
+                },
+                "name": {
+                  "description": "The target name as shown in the project editor and as accepted by other target-aware tools (like GetTargetBuildSettings) targetName parameter.",
+                  "type": "string"
+                },
+                "productTypeIdentifier": {
+                  "description": "The platform-scoped product type id (e.g. 'com.apple.product-type.application', 'com.apple.product-type.framework', 'com.apple.product-type.bundle.unit-test'). Null for aggregate targets and other blueprints with no product.",
+                  "type": "string"
+                },
+                "productTypeName": {
+                  "description": "Human-readable product-type name (e.g. 'Application', 'Framework', 'Unit Test Bundle'). Null when no product type is resolved.",
+                  "type": "string"
+                },
+                "supportsHostingTests": {
+                  "description": "True if the product type can host a unit-test bundle. Useful when picking a host for a new test target.",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "name",
+                "isTestTarget",
+                "supportsHostingTests",
+                "isAppExtension",
+                "isAggregate"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totalTargets": {
+            "description": "Total number of matching targets before truncation.",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "True if the inline targets array was truncated because more than 100 targets matched.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "targets",
+          "totalTargets",
+          "truncated",
+          "fullTargetListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListTemplates",
+      "title": "List Templates",
+      "description": "Lists Xcode templates available in this Xcode install. Use this to discover the templateIdentifier\nand option keys to pass to XcodeNewTarget (kind=\"target\") or XcodeNewProject (kind=\"project\"). The unfiltered listing is large (~200 target templates);\nalways pass at least one filter \u2014 typically platformFilter (e.g. [\"ios\"]) and/or categoryFilter\n(e.g. [\"Application\"]). Use nameFilter for a substring search by name. Pass templateIdentifier when\nyou already know the identifier to get back just that one entry. Each TemplateInfo includes the\ntemplate's options (popup / checkbox / text) so the caller can fill them in without a second round\ntrip \u2014 EXCEPT when no filter is supplied: in that \"broad browse\" case the inline `options` array\nis empty for each entry to keep the response small. Pass any filter (or templateIdentifier) to get\nthe full option schema. Inline results are capped at 100; the complete list with\nfull options for every template is always written to fullTemplateListPath in grep-friendly format\nwith keys like TEMPLATE_INDEX, TEMPLATE_IDENTIFIER, TEMPLATE_NAME, TEMPLATE_CATEGORY, PLATFORM,\nIS_MULTI_PLATFORM, OPTION_*.\nSupports kind=\"target\" (default) and kind=\"project\". Other kinds return an error listing supported values.",
+      "inputSchema": {
+        "properties": {
+          "categoryFilter": {
+            "description": "Optional list of substrings, case-insensitive, matched against the template's templateCategory (e.g. 'Application', 'Framework & Library', 'Application Extension').",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "description": "Optional template kind to list. Supports 'target' (default) and 'project'.",
+            "type": "string"
+          },
+          "nameFilter": {
+            "description": "Optional substring, case-insensitive, matched against the template's human-readable templateName (e.g. 'Framework', 'Widget').",
+            "type": "string"
+          },
+          "platformFilter": {
+            "description": "Optional list of platform identifiers or names (case-insensitive). Matches identifier or name on the template's templatePlatforms (e.g. 'ios', 'macos', 'tvos', 'watchos', 'visionos'). Templates flagged multi-platform or platform-generic are always included.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "templateIdentifier": {
+            "description": "Optional exact identifier match (e.g. 'com.apple.dt.unit.iosFramework'). When supplied, the listing returns only the matching template \u2014 useful for retrieving the option schema for a known template.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "fullTemplateListPath": {
+            "description": "Path to a file containing the complete template list in grep-friendly format.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional message with additional information about truncation.",
+            "type": "string"
+          },
+          "templates": {
+            "description": "Templates matching the supplied filters, capped at 100 entries. Sorted by templateCategory, then by templateName (alphabetical, case-insensitive).",
+            "items": {
+              "properties": {
+                "identifier": {
+                  "description": "Stable reverse-DNS identifier (e.g. 'com.apple.dt.unit.iosFramework'). Pass this to XcodeNewTarget's templateIdentifier.",
+                  "type": "string"
+                },
+                "isMultiPlatform": {
+                  "description": "True if the template explicitly supports multiple platforms (declared with an empty Platforms array).",
+                  "type": "boolean"
+                },
+                "isPlatformGeneric": {
+                  "description": "True if the template is not tied to any specific platform (declared without a Platforms array).",
+                  "type": "boolean"
+                },
+                "options": {
+                  "description": "The template's caller-settable options. Pass values via XcodeNewTarget's `options` dict using each option.identifier as the key. Empty when XcodeListTemplates is called with no filter (broad browse mode) \u2014 pass any filter (platformFilter, categoryFilter, nameFilter, or templateIdentifier) to drill in and get the full options for the matching templates. The complete options for every template are always included in `fullTemplateListPath`.",
+                  "items": {
+                    "properties": {
+                      "defaultValue": {
+                        "description": "The option's current default value, if any. Bools surface in the framework's canonical form: 'true' or 'false'.",
+                        "type": "string"
+                      },
+                      "identifier": {
+                        "description": "Stable key (e.g. 'productName', 'languageChoice', 'coreData'). Pass as a key in the XcodeNewTarget `options` dict.",
+                        "type": "string"
+                      },
+                      "name": {
+                        "description": "Human-readable label for the option, if the template provides one.",
+                        "type": "string"
+                      },
+                      "possibleValues": {
+                        "description": "For 'popup' / 'combo' / 'class' types: the allowed string values. Null for free-form types.",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": {
+                        "description": "One of 'popup' (string-enum), 'checkbox' (bool \u2014 pass 'true' or 'false' as the value), 'text' (free string), or other less-common types ('combo', 'class', 'static', 'buildSetting').",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "identifier",
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "platforms": {
+                  "description": "Platform identifiers the template targets (e.g. ['com.apple.platform.iphoneos']). Empty for multi-platform or platform-generic templates.",
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "summary": {
+                  "description": "Short human-readable summary from the template, if provided.",
+                  "type": "string"
+                },
+                "templateCategory": {
+                  "description": "Category string (e.g. 'Application', 'Framework & Library', 'Application Extension').",
+                  "type": "string"
+                },
+                "templateName": {
+                  "description": "Human-readable template name (e.g. 'Framework', 'Widget Extension', 'Unit Testing Bundle').",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "identifier",
+                "templateName",
+                "templateCategory",
+                "platforms",
+                "isMultiPlatform",
+                "isPlatformGeneric",
+                "options"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totalTemplates": {
+            "description": "Total number of matching templates before truncation.",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "True if the inline templates array was truncated because more than 100 templates matched. Tighten the filters to narrow the result set.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "templates",
+          "totalTemplates",
+          "truncated",
+          "fullTemplateListPath"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListTestPlans",
+      "title": "List Test Plans",
+      "description": "Lists the test plans associated with the currently active scheme and identifies which one\nis active. The testing tools (GetTestList, RunAllTests, RunSomeTests) and build-for-testing\noperate on the active test plan, so use XcodeSwitchTestPlan to change it before building or\nrunning tests against a different plan. If the active scheme has not been upgraded to use\ntest plans, `usesTestPlans` is false and `testPlans` is empty. Inline results are limited to\n100 plans with the active plan listed first; the complete list is always\nwritten to fullTestPlanListPath in grep-friendly format with keys like TEST_PLAN_NAME and\nIS_ACTIVE.",
+      "inputSchema": {
+        "properties": {
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "The name of the currently active test plan, or null if the scheme does not use test plans or has none.",
+            "type": "string"
+          },
+          "fullTestPlanListPath": {
+            "description": "Path to a file containing the complete test plan list in grep-friendly format.",
+            "type": "string"
+          },
+          "message": {
+            "description": "A human-readable description of the result.",
+            "type": "string"
+          },
+          "schemeName": {
+            "description": "The name of the active scheme whose test plans are listed.",
+            "type": "string"
+          },
+          "testPlans": {
+            "description": "The test plans associated with the active scheme, limited to 100 entries with the active plan listed first. Empty if the scheme does not use test plans.",
+            "items": {
+              "properties": {
+                "isActive": {
+                  "description": "True if this is the currently active test plan.",
+                  "type": "boolean"
+                },
+                "name": {
+                  "description": "The test plan's name, as it appears in the Xcode test plan picker. Pass this value to XcodeSwitchTestPlan (unless the name is ambiguous \u2014 see `path`).",
+                  "type": "string"
+                },
+                "path": {
+                  "description": "The test plan's file path. Populated ONLY when more than one test plan shares this `name`; null otherwise. When present, pass this path (or any unambiguous trailing portion of it, e.g. the last path component) to XcodeSwitchTestPlan to select this specific plan.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "isActive"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "totalTestPlans": {
+            "description": "Total number of test plans before truncation.",
+            "type": "integer"
+          },
+          "truncated": {
+            "description": "True if the inline testPlans array was truncated because more than 100 test plans exist.",
+            "type": "boolean"
+          },
+          "usesTestPlans": {
+            "description": "True if the active scheme has been upgraded to use test plans. When false, testing operates on the scheme's legacy test targets and there is no test plan to switch.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "testPlans",
+          "usesTestPlans",
+          "schemeName",
+          "truncated",
+          "totalTestPlans",
+          "fullTestPlanListPath",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeListWorkspaces",
+      "title": "List Workspaces",
+      "description": "Lists the workspaces currently open in Xcode, with the identifier and path of each. Use a workspace identifier (or absolute path) to target other tools at a specific workspace.",
+      "inputSchema": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "message": {
+            "description": "Description of all open workspaces",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeMV",
+      "title": "Move File",
+      "description": "Moves or renames files and directories in the project navigator with support for filesystem operations.",
+      "inputSchema": {
+        "properties": {
+          "destinationPath": {
+            "description": "Project navigator relative path for the destination (for move) or new name (for rename)",
+            "type": "string"
+          },
+          "operation": {
+            "description": "The type of move operation to perform",
+            "enum": [
+              "move",
+              "copy"
+            ],
+            "type": "string"
+          },
+          "overwriteExisting": {
+            "description": "Whether to overwrite existing files at the destination",
+            "type": "boolean"
+          },
+          "sourcePath": {
+            "description": "Project navigator relative path of the source item to move/rename",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourcePath",
+          "destinationPath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "destinationFinalPath": {
+            "description": "The final path of the moved/renamed item",
+            "type": "string"
+          },
+          "message": {
+            "description": "Result message describing the operation",
+            "type": "string"
+          },
+          "operation": {
+            "description": "The operation that was performed",
+            "type": "string"
+          },
+          "sourceOriginalPath": {
+            "description": "The original path of the source item",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the move/rename operation succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "operation",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeMakeDir",
+      "title": "Create Directory",
+      "description": "Creates directories and groups in the Xcode project structure.",
+      "inputSchema": {
+        "properties": {
+          "directoryPath": {
+            "description": "Project navigator relative path for the directory to create",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "directoryPath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "createdPath": {
+            "description": "The path of the created directory",
+            "type": "string"
+          },
+          "message": {
+            "description": "Result message describing the operation",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the directory creation succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeNewProject",
+      "title": "New Project",
+      "description": "Creates a new Xcode project from a template. The project is written to disk at the specified directory.\n\nUse XcodeListTemplates with kind=\"project\" to discover valid templateIdentifier values and their options. Required: templateIdentifier, productName, and destinationPath.\n\nTemplate-specific options go in `options`: each key is an option identifier from XcodeListTemplates (e.g. 'languageChoice', 'coreData', 'sceneLifecycle'). Checkbox options accept 'true'/'false' (also 'YES'/'NO' or '1'/'0', case-insensitive). Popup options must use one of the strings from the OptionInfo.possibleValues list.\n\norganizationIdentifier sets the bundle identifier prefix (e.g. 'com.example'). If omitted, the template's default is used.\n\nteamIdentifier sets the development team for code signing. If omitted, no team is set.\n\nAfter creation, use XcodeOpenWorkspace to open the generated project.",
+      "inputSchema": {
+        "properties": {
+          "destinationPath": {
+            "description": "Filesystem path to the directory where the project will be created (e.g. '/Users/<username>/projects'). The project is created in a subdirectory named after productName.",
+            "type": "string"
+          },
+          "options": {
+            "description": "Optional dictionary of template-specific options. Keys are option identifiers from XcodeListTemplates (e.g. 'languageChoice', 'coreData', 'sceneLifecycle'). All values are strings. Checkbox options accept 'true'/'false', 'YES'/'NO', or '1'/'0' (case-insensitive). Popup options must be one of OptionInfo.possibleValues. Reserved: do NOT include 'productName' or 'organizationIdentifier' here.",
+            "type": "object"
+          },
+          "organizationIdentifier": {
+            "description": "Optional bundle identifier prefix (e.g. 'com.example'). Sets the organization identifier used to derive the PRODUCT_BUNDLE_IDENTIFIER.",
+            "type": "string"
+          },
+          "productName": {
+            "description": "The new project's product name (e.g. 'MyApp'). This becomes the project filename and default target name.",
+            "type": "string"
+          },
+          "teamIdentifier": {
+            "description": "Optional Apple Development Team ID for code signing (e.g. 'A1B2C3D4E5'). Sets DEVELOPMENT_TEAM on the created targets.",
+            "type": "string"
+          },
+          "templateIdentifier": {
+            "description": "Template identifier to instantiate (e.g. 'com.apple.dt.unit.storyboardApplication'). Discover values with XcodeListTemplates (kind='project').",
+            "type": "string"
+          }
+        },
+        "required": [
+          "templateIdentifier",
+          "productName",
+          "destinationPath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "createdTargets": {
+            "description": "Names of all targets created in the new project, sorted alphabetically.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "projectPath": {
+            "description": "Filesystem path to the created .xcodeproj.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectPath",
+          "createdTargets"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeNewTarget",
+      "title": "New Target",
+      "description": "Adds a new target to a project in the current Xcode workspace using a target template. Discover\nvalid templateIdentifier values (and the option schema for each) with XcodeListTemplates.\n\nRequired: templateIdentifier (e.g. 'com.apple.dt.unit.iosFramework') and productName (the new\ntarget's product name, e.g. 'MyFeature'). productName must be unique within the destination\nproject \u2014 duplicates are rejected up front. Note that some templates derive a target name\nfrom productName (e.g. Widget Extension appends 'Extension'); the actual final name is\nreturned in `targetName`.\n\norganizationIdentifier overrides the workspace default for the bundle identifier prefix. When\nembedInAppNamed is set and organizationIdentifier is left unset, the prefix auto-derives from\nthe host app's evaluated PRODUCT_BUNDLE_IDENTIFIER so the embedded target's bundle id is\nprefixed by the host's (Xcode's `<host>.<extension>` code-signing rule).\n\nTemplate-specific options go in `options`: each key is an IDETemplateOption.identifier from\nXcodeListTemplates (e.g. 'languageChoice', 'coreData', 'testingSystem'); pass values as strings.\nCheckbox options accept 'true'/'false' (also 'YES'/'NO' or '1'/'0', case-insensitive).\nPopup options must use one of the strings from the OptionInfo.possibleValues list returned by\nXcodeListTemplates. Unknown keys and invalid values are rejected with a list of valid keys/values.\n\nprojectPath selects which .xcodeproj in the workspace owns the new target \u2014 required only\nwhen the workspace contains more than one project and `embedInAppNamed` doesn't\ndisambiguate; resolution rules match XcodeListTargets.\n\nembedInAppNamed embeds the new target in an existing app target (useful for app extensions,\nwidgets, intents). The named target must already exist and be an application.\n\nSide effect to be aware of: If \"Autocreate schemes\" is enabled for the workspace then a scheme may be created for the new\ntarget and switched to as the active scheme. The post-instantiation active scheme name is\nreturned in `activeSchemeName`.",
+      "inputSchema": {
+        "properties": {
+          "embedInAppNamed": {
+            "description": "Optional name of an existing application target to embed the new target into (relevant for app extensions, widgets, intents, etc.). MUST live in the same project as the new target \u2014 cross-project embedding is rejected. In a multi-project workspace, if `projectPath` is omitted and exactly one application target in the workspace has this name, that target's project is used as the destination automatically.",
+            "type": "string"
+          },
+          "options": {
+            "description": "Optional dictionary of template-specific options. Keys are IDETemplateOption identifiers from XcodeListTemplates (e.g. 'languageChoice', 'testingSystem', 'coreData'). All values are strings. Checkbox options accept 'true'/'false', 'YES'/'NO', or '1'/'0' (case-insensitive) \u2014 normalized for you. Popup options must be one of OptionInfo.possibleValues. Unknown keys are rejected with a list of valid keys. Reserved: do NOT include `productName`, `organizationIdentifier`, or `bundleIdentifierPrefix` here \u2014 they're set via the dedicated top-level parameters and a duplicate in `options` is rejected.",
+            "type": "object"
+          },
+          "organizationIdentifier": {
+            "description": "Optional bundle-identifier prefix to set on the new target (sets the 'organizationIdentifier' template option). Defaults to the workspace's organization identifier when omitted.",
+            "type": "string"
+          },
+          "productName": {
+            "description": "The new target's product name (PRODUCT_NAME), e.g. 'MyFeature'. Must be non-empty. Most templates also use this as the target name verbatim, but some derive a different name (e.g. the Widget Extension template appends 'Extension', producing target 'MyFeatureExtension'). Check the `targetName` returned in the output for the actual final name \u2014 that's the value to pass to GetTargetBuildSettings, etc.",
+            "type": "string"
+          },
+          "projectPath": {
+            "description": "Optional project-organization or filesystem path to the .xcodeproj that should own the new target (e.g. 'MyApp/MyApp.xcodeproj'). Required only when the workspace contains more than one project and `embedInAppNamed` doesn't disambiguate. Both forms \u2014 with and without the .xcodeproj suffix \u2014 are accepted.",
+            "type": "string"
+          },
+          "templateIdentifier": {
+            "description": "Template identifier to instantiate (e.g. 'com.apple.dt.unit.iosFramework'). Discover values with XcodeListTemplates.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "templateIdentifier",
+          "productName"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeSchemeName": {
+            "description": "Name of the active scheme after instantiation. Xcode's target templates often switch the active scheme to a newly auto-generated one for the new target. Null only when no active scheme could be read.",
+            "type": "string"
+          },
+          "additionalTargetsCreated": {
+            "description": "Names of any other targets the template added alongside the primary one (e.g. an accompanying test bundle when `testingSystem` is set on a framework template). Sorted alphabetically. Empty when the template added only the primary target.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "containingProjectPath": {
+            "description": "Project-organization path of the .xcodeproj that received the new target (e.g. 'MyApp/MyApp.xcodeproj'). May be null only if the path could not be canonicalized.",
+            "type": "string"
+          },
+          "primaryFilePath": {
+            "description": "Filesystem path of the template's primary file (the one Xcode would open in the editor). Null when the template does not designate one.",
+            "type": "string"
+          },
+          "targetGroupPath": {
+            "description": "Project-organization path of the directory Xcode's target templates conventionally write the new target's files to. Null if the conventional directory does not exist on disk (rare; the template may have placed files elsewhere).",
+            "type": "string"
+          },
+          "targetName": {
+            "description": "The actual name of the newly added target. Usually equals productName, but some templates derive a different name (e.g. Widget Extension appends 'Extension', so productName 'MyWidget' becomes target 'MyWidgetExtension'). Pass this back to GetTargetBuildSettings, UpdateTargetBuildSetting, etc.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetName",
+          "additionalTargetsCreated"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeOpenWorkspace",
+      "title": "Open Workspace",
+      "description": "Opens an Xcode workspace or project at the given path and returns its workspace identifier, which other tools can use to target it.",
+      "inputSchema": {
+        "properties": {
+          "path": {
+            "description": "Absolute path to the .xcworkspace or .xcodeproj to open",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeRunDestination": {
+            "description": "The active run destination of the opened workspace, if any",
+            "type": "string"
+          },
+          "activeScheme": {
+            "description": "The active scheme of the opened workspace, if any",
+            "type": "string"
+          },
+          "message": {
+            "description": "A warning or informational message about the workspace state",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "The identifier of the opened workspace",
+            "type": "string"
+          },
+          "workspacePath": {
+            "description": "The resolved path of the opened workspace",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspaceIdentifier"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeRM",
+      "title": "Remove File",
+      "description": "Removes files and directories from the Xcode project structure and optionally deletes the underlying files from the filesystem.",
+      "inputSchema": {
+        "properties": {
+          "deleteFiles": {
+            "description": "Also move the underlying files to Trash (defaults to true)",
+            "type": "boolean"
+          },
+          "path": {
+            "description": "The project path to remove (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "recursive": {
+            "description": "Remove directories and their contents recursively",
+            "type": "boolean"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "message": {
+            "description": "Status message about the removal operation",
+            "type": "string"
+          },
+          "removedPath": {
+            "description": "The project path that was removed",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the removal operation was successful",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "removedPath",
+          "success",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeRead",
+      "title": "Read",
+      "description": "Reads the contents of a file within the Xcode project organization. Returns content in cat -n format with line numbers. Supports reading up to 600 lines by default with optional offset and limit parameters for large files. Output is JSON-encoded e.g. backslashes, quotes, and newlines appear escaped (\\\\, \\\", \\n). Account for this when interpreting file content.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "limit": {
+            "description": "The number of lines to read (only provide if the file is too large to read at once)",
+            "type": "integer"
+          },
+          "offset": {
+            "description": "The line number to start reading from (only provide if the file is too large to read at once)",
+            "type": "integer"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "content": {
+            "description": "The file contents formatted with line numbers (cat -n style)",
+            "type": "string"
+          },
+          "filePath": {
+            "description": "The project path that was read",
+            "type": "string"
+          },
+          "fileSize": {
+            "description": "Size of the file in bytes",
+            "type": "integer"
+          },
+          "linesRead": {
+            "description": "Number of lines actually read",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Optional message about the operation",
+            "type": "string"
+          },
+          "startLine": {
+            "description": "The line number where reading started",
+            "type": "integer"
+          },
+          "totalLines": {
+            "description": "Total number of lines in the file",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "content",
+          "filePath",
+          "totalLines",
+          "linesRead",
+          "startLine",
+          "fileSize"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeRefreshCodeIssuesInFile",
+      "title": "XcodeRefreshCodeIssuesInFile",
+      "description": "Retrieves current compiler diagnostics (errors, warnings, notes) for a file in the Xcode project. Returns formatted diagnostic information including severity levels and messages.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filePath"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "content": {
+            "description": "Formatted diagnostic output with severity levels and messages",
+            "type": "string"
+          },
+          "diagnosticsCount": {
+            "description": "Number of diagnostics found (errors, warnings, notes)",
+            "type": "integer"
+          },
+          "filePath": {
+            "description": "The project path that was checked for diagnostics",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the diagnostic retrieval completed successfully",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "filePath",
+          "diagnosticsCount",
+          "content",
+          "success"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeSwitchRunDestination",
+      "title": "Switch Run Destination",
+      "description": "Changes the active run destination for the currently active scheme. The active scheme is left unchanged. Pass the destination's `displayTitle` (the disambiguated label shown in the Xcode picker). Valid sources: any `displayTitle` field returned by XcodeListRunDestinations, the list tool's `activeDestinationDisplayTitle` field, this tool's own `activeDestinationDisplayTitle` from a prior call, or XcodeSwitchScheme's `activeDestinationDisplayTitle` field \u2014 outputs from any of these chain back into this parameter without re-listing. Refuses to switch to a destination that is not eligible for the active scheme and reports the framework's reason. The output reflects Xcode's post-switch state.",
+      "inputSchema": {
+        "properties": {
+          "displayTitle": {
+            "description": "The destination's `displayTitle` \u2014 the disambiguated label shown in the Xcode picker. Round-trips through any of these prior tool outputs without needing a fresh XcodeListRunDestinations call: this tool's own `activeDestinationDisplayTitle`, XcodeSwitchScheme's `activeDestinationDisplayTitle`, or any `displayTitle` / `activeDestinationDisplayTitle` from XcodeListRunDestinations.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "displayTitle"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeDestinationDisplayTitle": {
+            "description": "The disambiguated displayTitle of the run destination that is now active, read from Xcode after the switch (so it reflects any auto-resolution Xcode applied). This value round-trips through XcodeSwitchRunDestination.",
+            "type": "string"
+          },
+          "activeSchemeName": {
+            "description": "The name of the scheme the run destination is associated with (unchanged by this action).",
+            "type": "string"
+          },
+          "message": {
+            "description": "A human-readable description of the result.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activeDestinationDisplayTitle",
+          "activeSchemeName",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeSwitchScheme",
+      "title": "Switch Scheme",
+      "description": "Changes the active scheme in the current Xcode workspace to the specified scheme.\nAccepts either a scheme's name or its disambiguated name (needed when multiple schemes share the same name).\nUse the XcodeListSchemes tool to discover available scheme names.\nThe active run destination may be adjusted automatically when the previous one isn't compatible with the newly selected scheme \u2014 and Xcode may pick a different *variant* (for example, switching from \"My Mac\" to \"My Mac (Mac Catalyst)\") even when the destination's display name appears similar. The response's `activeDestinationDisplayTitle` matches what XcodeListRunDestinations returns, so callers can detect such auto-resolutions without a follow-up list call.",
+      "inputSchema": {
+        "properties": {
+          "schemeName": {
+            "description": "The name of the scheme to make active. To resolve ambiguity when multiple schemes share the same name, use the disambiguated name returned by XcodeListSchemes (for example, \"MyScheme (MyProject)\").",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schemeName"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeDestinationDisplayTitle": {
+            "description": "The disambiguated displayTitle of the active run destination \u2014 the same string XcodeListRunDestinations returns. Use this to detect when Xcode auto-resolved the destination to a different variant (e.g. from 'My Mac' to 'My Mac (Mac Catalyst)') because the previous destination wasn't compatible with the new scheme.",
+            "type": "string"
+          },
+          "activeSchemeName": {
+            "description": "The name of the scheme that is now active.",
+            "type": "string"
+          },
+          "activeTestPlanName": {
+            "description": "The name of the new scheme's active test plan, or null if the scheme does not use test plans. Each scheme has its own active test plan, so switching schemes changes which plan testing and build-for-testing operate on. Use XcodeListTestPlans / XcodeSwitchTestPlan to inspect or change it.",
+            "type": "string"
+          },
+          "message": {
+            "description": "A human-readable description of the result.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activeSchemeName",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeSwitchTestPlan",
+      "title": "Switch Test Plan",
+      "description": "Changes the active test plan for the currently active scheme. The testing tools (GetTestList, RunAllTests, RunSomeTests) and build-for-testing all operate on the active test plan, so switch it before building or running tests against a different plan. Use XcodeListTestPlans to discover the available test plan names. Pass a plan's name; if two plans share a name, pass the `path` XcodeListTestPlans reports for the one you want (or any unambiguous trailing portion of it). This is a persistent change to the scheme's active test plan, equivalent to selecting a different plan in Xcode's test plan picker.",
+      "inputSchema": {
+        "properties": {
+          "testPlanName": {
+            "description": "Which test plan to make active. Normally the plan's name as returned by XcodeListTestPlans (e.g. \"UnitTests\"). If two plans share a name, XcodeListTestPlans reports a `path` for each; pass that full path, or any unambiguous trailing portion of it (e.g. the last path component), to select a specific plan.",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "testPlanName"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "activeTestPlanName": {
+            "description": "The name of the test plan that is now active.",
+            "type": "string"
+          },
+          "activeTestPlanPath": {
+            "description": "The file path of the test plan that is now active. Populated ONLY when more than one test plan shares `activeTestPlanName`, so callers can confirm which instance was selected; null when the name is unique.",
+            "type": "string"
+          },
+          "message": {
+            "description": "A human-readable description of the result.",
+            "type": "string"
+          },
+          "schemeName": {
+            "description": "The name of the scheme the test plan belongs to (unchanged by this action).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activeTestPlanName",
+          "schemeName",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeUpdate",
+      "title": "Edit File",
+      "description": "Edits files in the Xcode project by replacing text content. Works on Xcode project structure paths, not filesystem paths. IMPORTANT: The tool will fail if filePath, oldString, or newString parameters are missing. Input oldString and newString use literal characters e.g. if XcodeRead shows \\\\d, use \\d in parameters to match it.",
+      "inputSchema": {
+        "properties": {
+          "filePath": {
+            "description": "REQUIRED: The path to the file to modify within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "newString": {
+            "description": "REQUIRED: The text to replace it with, must be different from oldString",
+            "type": "string"
+          },
+          "oldString": {
+            "description": "REQUIRED: The text to replace",
+            "type": "string"
+          },
+          "replaceAll": {
+            "description": "Replace all occurrences of oldString (default false)",
+            "type": "boolean"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filePath",
+          "oldString",
+          "newString"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "editsApplied": {
+            "description": "Number of successful text replacements made",
+            "type": "integer"
+          },
+          "filePath": {
+            "description": "The path of the file that was edited",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional message with additional information about the edit results",
+            "type": "string"
+          },
+          "modifiedContentLength": {
+            "description": "Length of the file content after editing",
+            "type": "integer"
+          },
+          "originalContentLength": {
+            "description": "Length of the file content before editing",
+            "type": "integer"
+          },
+          "success": {
+            "description": "Whether the edit operation completed successfully",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "filePath",
+          "editsApplied",
+          "success",
+          "originalContentLength",
+          "modifiedContentLength"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "XcodeWrite",
+      "title": "Write File",
+      "description": "Creates or overwrites files with content in the Xcode project. Works on Xcode project structure paths, not filesystem paths. Automatically adds new files to the project structure. Both filePath and content parameters are required. Input content uses literal characters e.g. if XcodeRead shows \\\\d, use \\d in the content parameter to write it.",
+      "inputSchema": {
+        "properties": {
+          "content": {
+            "description": "REQUIRED: The content to write to the file",
+            "type": "string"
+          },
+          "filePath": {
+            "description": "REQUIRED: The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
+            "type": "string"
+          },
+          "workspaceIdentifier": {
+            "description": "Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filePath",
+          "content"
+        ],
+        "type": "object"
+      },
+      "outputSchema": {
+        "properties": {
+          "absolutePath": {
+            "description": "The absolute file system path of the written file",
+            "type": "string"
+          },
+          "bytesWritten": {
+            "description": "Number of bytes written to the file",
+            "type": "integer"
+          },
+          "filePath": {
+            "description": "The project path that was written",
+            "type": "string"
+          },
+          "linesWritten": {
+            "description": "Number of lines written to the file",
+            "type": "integer"
+          },
+          "message": {
+            "description": "Result message describing the write operation",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether the file write operation succeeded",
+            "type": "boolean"
+          },
+          "wasExistingFile": {
+            "description": "Whether the file existed before writing",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success",
+          "filePath",
+          "bytesWritten",
+          "linesWritten",
+          "message",
+          "wasExistingFile"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

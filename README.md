@@ -19,7 +19,7 @@ A comprehensive reference for the Xcode MCP Server aka Xcode Tools. These tools 
 - Xcode 27.0+ installed and running with an open workspace — or headless mode enabled, see [Headless mode](#headless-mode)
 - MCP server configured with Xcode integration
 
-> **Note:** Most tools accept an optional `tabIdentifier` parameter that identifies which Xcode workspace tab to operate on — omit it when only one tab is open.
+> **Note:** Most tools accept an optional `tabIdentifier` parameter that identifies which Xcode workspace tab to operate on — omit it when only one tab is open. In [headless mode](#headless-mode) the same parameter is named `workspaceIdentifier` and takes a workspace identifier or an absolute path instead.
 
 ## Installation
 
@@ -37,7 +37,9 @@ codex mcp add xcode -- xcrun mcpbridge
 
 Verify with `claude mcp list` or `codex mcp list`.
 
-By default `mcpbridge` connects to the Xcode selected by `xcode-select`; set `MCP_XCODE_PID` to target a specific instance. (In beta 4 and earlier it first auto-detected a single running Xcode and only then fell back to `xcode-select`.)
+By default `mcpbridge` connects to the Xcode selected by `xcode-select`; set `MCP_XCODE_PID` to target a specific instance, or `MCP_XCODE_SESSION_ID` to pass a UUID identifying an Xcode tool session. (In beta 4 and earlier it first auto-detected a single running Xcode and only then fell back to `xcode-select`.) With [headless mode](#headless-mode) enabled, the same `xcrun mcpbridge` command reaches the headless service — it launches or reuses `XcodeService.app` through LaunchServices, so no Xcode window is needed.
+
+`mcpbridge` also has a `run-agent` subcommand that launches a coding agent pre-configured with the Xcode MCP tools (`xcrun mcpbridge run-agent claude`, `--dry-run` to print the resolved command, `--no-xcode-tools` to leave the tools out), and `xcrun mcpbridge run-agent skills` inspects and exports the Xcode-provided skills.
 
 ## Headless mode 🆕
 
@@ -60,14 +62,65 @@ sudo xcrun mcp-server enable
 
 Request and permission ids come from `mcp-server status`. For unattended environments, `sudo xcrun mcp-server enable --unsafe-always-allow-all-agents` approves every agent upfront — Apple does not recommend it for at-desk use.
 
+### What actually runs
+
+`xcrun mcp-server` is only a launcher. The server itself is `XcodeService.app`, shipped inside the toolchain at `Xcode.app/Contents/Developer/Applications/XcodeService.app` with bundle identifier `com.apple.dt.mcp-server` and `LSUIElement`, so it has no Dock icon and no menu bar. It is started as a RunningBoard-managed application job — `launchctl print gui/$(id -u)/application.com.apple.dt.mcp-server.<n>.<n>` shows the job with `managed_by = com.apple.runningboard`. It is the same Xcode engine, not a separate reimplementation, and it can attach a UI later, so headless is a mode rather than a different product.
+
+### Permissions
+
+Granted permissions are stored in a JSON file inside Xcode's secure settings group container, readable only by the user:
+
+```
+~/Library/Group Containers/group.com.apple.dt.Xcode.SecureSettingsContainer/CodingAssistant/HeadlessPermissions/mcp-server.json
+```
+
+```json
+{
+  "version": 1,
+  "enabled": true,
+  "agentPermissions": [
+    { "id": "1B162114-…", "trust": { "signed": { "signingIdentifier": "com.anthropic.claude-code", "teamIdentifier": "Q6L2SF6YDW" } } }
+  ],
+  "folderPermissions": [
+    { "id": "B9BAFD34-…", "subtreeRoot": "/Users/username/Developer/MyApp" }
+  ]
+}
+```
+
+Agent trust is a code-signing identity — team identifier plus signing identifier — not a filesystem path, so moving or renaming an approved agent binary does not invalidate its grant, but re-signing it does. Unsigned agents are recorded by path and a content hash, and can only be approved with `--for-24-hours`; `--always` is rejected for them.
+
+Two things are worth knowing before enabling this:
+
+- The identity that gets recorded is the process that **launched** `mcpbridge`, not `mcpbridge` itself. Wrapping the command (for example `timeout xcrun mcpbridge`) registers the wrapper as the agent.
+- An already-approved agent can widen its own reach: calling `XcodeOpenWorkspace` on a project outside every permitted folder adds that folder to `folderPermissions` without a prompt, and launching `mcpbridge` from an approved agent's process tree grants the launcher a 24-hour agent permission of its own.
+
+### Tool surface in headless mode
+
+Headless mode does not expose the same tools as an Xcode window. [tools-headless.json](tools-headless.json) has the full headless schema; the differences from the windowed server are:
+
+| | Tools |
+|---|---|
+| **Headless only** | [`XcodeListWorkspaces`](#xcodelistworkspaces), [`XcodeOpenWorkspace`](#xcodeopenworkspace), [`XcodeCloseWorkspace`](#xcodecloseworkspace), [`XcodeNewProject`](#xcodenewproject) |
+| **Windowed only** | [`XcodeListWindows`](#xcodelistwindows), [`XcodeGetCurrentFile`](#xcodegetcurrentfile), [`XcodeListNavigatorIssues`](#xcodelistnavigatorissues) |
+
+The tools that only make sense with a UI — the window list, the file the user is looking at, the issue navigator — are gone, and the tools for driving the workspace set yourself take their place.
+
+Every other tool that took a `tabIdentifier` takes a **`workspaceIdentifier`** instead: *"Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path."* It accepts either the identifier returned by `XcodeOpenWorkspace`/`XcodeListWorkspaces` (in practice something like `workspace-LKfjPJCMBL`) or the absolute path of the project. Prompts, skills, and scripts that hardcode `tabIdentifier` need updating for headless mode.
+
+[`DocumentationSearch`](#documentationsearch), which is hidden from `tools/list` in the windowed server since beta 4, is listed normally in headless mode.
+
 ## Schema
 
-[tools.json](tools.json) contains the full MCP tool definitions (name, title, description, input/output schemas) generated directly from `xcrun mcpbridge`.
+[tools.json](tools.json) contains the full MCP tool definitions (name, title, description, input/output schemas) generated directly from `xcrun mcpbridge` against a running Xcode. [tools-headless.json](tools-headless.json) is the same listing captured from [headless mode](#headless-mode) — 54 tools instead of 53, see [Tool surface in headless mode](#tool-surface-in-headless-mode) for the differences.
+
+The tool sections below document the windowed server; in headless mode read `tabIdentifier` as `workspaceIdentifier`.
 
 ## Xcode 27 beta 5 changes
 
 - **Added:** `xcrun mcp-server` — headless MCP server that runs without an open workspace, plus durable per-agent/per-folder permissions; see [Headless mode](#headless-mode)
-- **Changed:** `mcpbridge` now connects to the `xcode-select` Xcode by default instead of auto-detecting a single running instance
+- **Added (headless only):** [`XcodeListWorkspaces`](#xcodelistworkspaces), [`XcodeOpenWorkspace`](#xcodeopenworkspace), [`XcodeCloseWorkspace`](#xcodecloseworkspace), and [`XcodeNewProject`](#xcodenewproject) — manage the open workspace set and create projects from templates without a UI
+- **Changed (headless only):** `tabIdentifier` becomes `workspaceIdentifier` on every tool that had it, and takes a workspace identifier or an absolute path; [`XcodeListWindows`](#xcodelistwindows), [`XcodeGetCurrentFile`](#xcodegetcurrentfile), and [`XcodeListNavigatorIssues`](#xcodelistnavigatorissues) are not exposed — see [Tool surface in headless mode](#tool-surface-in-headless-mode)
+- **Changed:** `mcpbridge` now connects to the `xcode-select` Xcode by default instead of auto-detecting a single running instance, and reaches the headless `XcodeService.app` when headless mode is on
 - **Added:** [`XcodeListTargets`](#xcodelisttargets) — lists targets with product type and role flags, optionally filtered by project or product type
 - **Added:** [`XcodeListTemplates`](#xcodelisttemplates) — lists target templates and their options, to feed `XcodeNewTarget`
 - **Added:** [`XcodeNewTarget`](#xcodenewtarget) — adds a target from a template, with template options, embedding, and project selection
@@ -97,6 +150,9 @@ Request and permission ids come from `mcp-server status`. For unattended environ
 
 - **[Workspace](#workspace)**
   - [XcodeListWindows](#xcodelistwindows)
+  - [XcodeListWorkspaces](#xcodelistworkspaces) 🆕
+  - [XcodeOpenWorkspace](#xcodeopenworkspace) 🆕
+  - [XcodeCloseWorkspace](#xcodecloseworkspace) 🆕
   - [XcodeGetCurrentFile](#xcodegetcurrentfile) 🆕
   - [XcodeListSchemes](#xcodelistschemes) 🆕
   - [XcodeSwitchScheme](#xcodeswitchscheme) 🆕
@@ -115,6 +171,7 @@ Request and permission ids come from `mcp-server status`. For unattended environ
 - **[Project Configuration](#project-configuration)** 🆕
   - [XcodeListTargets](#xcodelisttargets)
   - [XcodeListTemplates](#xcodelisttemplates)
+  - [XcodeNewProject](#xcodenewproject) 🆕
   - [XcodeNewTarget](#xcodenewtarget)
   - [AddEntitlement](#addentitlement) 🆕
   - [AddInfoPlist](#addinfoplist) 🆕
@@ -166,7 +223,7 @@ Request and permission ids come from `mcp-server status`. For unattended environ
 
 ### XcodeListWindows
 
-Lists current Xcode windows and their workspace information. Use this to obtain `tabIdentifier` values needed by all other tools.
+Lists current Xcode windows and their workspace information. Use this to obtain `tabIdentifier` values needed by all other tools. Not available in [headless mode](#headless-mode) — use `XcodeListWorkspaces` there.
 
 **Parameters:** None
 
@@ -175,9 +232,52 @@ Lists current Xcode windows and their workspace information. Use this to obtain 
 XcodeListWindows()
 ```
 
+### XcodeListWorkspaces 🆕
+
+> Headless mode only.
+
+Lists the workspaces currently open in the headless server, with the identifier and path of each. Use a returned `workspaceIdentifier` (or an absolute path) to target other tools at a specific workspace.
+
+**Parameters:** None
+
+**Example:**
+```
+XcodeListWorkspaces()
+```
+
+### XcodeOpenWorkspace 🆕
+
+> Headless mode only.
+
+Opens a workspace or project at the given path and returns its `workspaceIdentifier`, along with `workspacePath`, `activeScheme`, and `activeRunDestination`. Opening a project also grants its enclosing folder a permission entry — see [Permissions](#permissions).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `path` | string | Yes | Absolute path to the `.xcworkspace` or `.xcodeproj` to open |
+
+**Example:**
+```
+XcodeOpenWorkspace(path: "/Users/username/Developer/MyApp/MyApp.xcodeproj")
+```
+
+### XcodeCloseWorkspace 🆕
+
+> Headless mode only.
+
+Closes a workspace previously opened with `XcodeOpenWorkspace`.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `workspaceIdentifier` | string | Yes | Identifier returned by `XcodeOpenWorkspace` or `XcodeListWorkspaces` |
+
+**Example:**
+```
+XcodeCloseWorkspace(workspaceIdentifier: "workspace-LKfjPJCMBL")
+```
+
 ### XcodeGetCurrentFile 🆕
 
-Gets information about the currently active file in the Xcode editor, including file path, content, and selection. Returns content in `cat -n` format.
+Gets information about the currently active file in the Xcode editor, including file path, content, and selection. Returns content in `cat -n` format. Not available in [headless mode](#headless-mode), which has no editor.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -446,7 +546,7 @@ Lists the target templates available in this Xcode install, with the option sche
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `kind` | string | No | Template kind. Only `target` is supported (default) |
+| `kind` | string | No | Template kind: `target` (default), or `project` in [headless mode](#headless-mode) to feed `XcodeNewProject` |
 | `platformFilter` | string[] | No | Platform identifiers or names (e.g. `ios`, `macos`). Multi-platform and platform-generic templates are always included |
 | `categoryFilter` | string[] | No | Substrings matched against the category (e.g. `Application`, `Framework & Library`) |
 | `nameFilter` | string | No | Substring matched against the template name (e.g. `Widget`) |
@@ -455,6 +555,26 @@ Lists the target templates available in this Xcode install, with the option sche
 **Example:**
 ```
 XcodeListTemplates(platformFilter: ["ios"], categoryFilter: ["Framework & Library"])
+```
+
+### XcodeNewProject 🆕
+
+> Headless mode only.
+
+Creates a new Xcode project from a template and writes it to disk in a subdirectory of `destinationPath` named after `productName`. Discover `templateIdentifier` values and their options with `XcodeListTemplates(kind: "project")`. Open the result with `XcodeOpenWorkspace`.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `templateIdentifier` | string | Yes | Template to instantiate (e.g. `com.apple.dt.unit.storyboardApplication`) |
+| `productName` | string | Yes | Product name — becomes the project filename and default target name |
+| `destinationPath` | string | Yes | Directory the project is created in |
+| `options` | object | No | Template-specific options from `XcodeListTemplates`. All values are strings; checkboxes take `true`/`false`, `YES`/`NO`, or `1`/`0`; popups must use a value from `possibleValues`. Do **not** pass `productName` or `organizationIdentifier` here |
+| `organizationIdentifier` | string | No | Bundle identifier prefix (e.g. `com.example`) |
+| `teamIdentifier` | string | No | Development team ID for code signing |
+
+**Example:**
+```
+XcodeNewProject(templateIdentifier: "com.apple.dt.unit.multiplatformApp", productName: "MyApp", destinationPath: "/Users/username/Developer", options: ["languageChoice": "SwiftUI"])
 ```
 
 ### XcodeNewTarget
@@ -837,7 +957,7 @@ XcodeRefreshCodeIssuesInFile(
 
 ### XcodeListNavigatorIssues
 
-Lists issues from Xcode's Issue Navigator, including build errors, package resolution problems, and workspace configuration issues.
+Lists issues from Xcode's Issue Navigator, including build errors, package resolution problems, and workspace configuration issues. Not available in [headless mode](#headless-mode), which has no navigator.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -1132,7 +1252,7 @@ RenderPreview(
 
 ### DocumentationSearch ⚠️
 
-> **Status in Xcode 27 beta 5:** absent from `tools/list` — a standard MCP client won't discover it through normal enumeration. It's still implemented and works when called directly by name: it's gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads), and returns `Tool 'DocumentationSearch' is not enabled.` until that asset finishes downloading/indexing. Once ready, direct calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template) and can call it once the asset is ready.
+> **Status in Xcode 27 beta 5:** absent from `tools/list` — a standard MCP client won't discover it through normal enumeration. It's still implemented and works when called directly by name: it's gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads), and returns `Tool 'DocumentationSearch' is not enabled.` until that asset finishes downloading/indexing. Once ready, direct calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template) and can call it once the asset is ready. In [headless mode](#headless-mode) the tool is listed normally.
 
 Searches Apple Developer Documentation using semantic matching. Useful for looking up APIs, frameworks, and usage patterns.
 
