@@ -2,7 +2,7 @@
 
 A comprehensive reference for the Xcode MCP Server aka Xcode Tools. These tools enable AI assistants to interact with Xcode workspaces — managing files, building projects, running tests, rendering previews, and more.
 
-> Reflects **Xcode 27 beta 5**.
+> Reflects **Xcode 27 beta 5**. Everything marked 🆕 or listed under [What's new in Xcode 27](#whats-new-in-xcode-27) is relative to the current release, **Xcode 26.5**.
 
 <p align="center">
   <img src=".github/screenshot.png" width="60%"/>
@@ -37,13 +37,13 @@ codex mcp add xcode -- xcrun mcpbridge
 
 Verify with `claude mcp list` or `codex mcp list`.
 
-By default `mcpbridge` connects to the Xcode selected by `xcode-select`; set `MCP_XCODE_PID` to target a specific instance, or `MCP_XCODE_SESSION_ID` to pass a UUID identifying an Xcode tool session. (In beta 4 and earlier it first auto-detected a single running Xcode and only then fell back to `xcode-select`.) With [headless mode](#headless-mode) enabled, the same `xcrun mcpbridge` command reaches the headless service — it launches or reuses `XcodeService.app` through LaunchServices, so no Xcode window is needed.
+By default `mcpbridge` connects to the Xcode selected by `xcode-select`; set `MCP_XCODE_PID` to target a specific instance, or `MCP_XCODE_SESSION_ID` to pass a UUID identifying an Xcode tool session. With [headless mode](#headless-mode) enabled, the same `xcrun mcpbridge` command reaches the headless service — it launches or reuses `XcodeService.app` through LaunchServices, so no Xcode window is needed.
 
 `mcpbridge` also has a `run-agent` subcommand that launches a coding agent pre-configured with the Xcode MCP tools (`xcrun mcpbridge run-agent claude`, `--dry-run` to print the resolved command, `--no-xcode-tools` to leave the tools out), and `xcrun mcpbridge run-agent skills` inspects and exports the Xcode-provided skills.
 
 ## Headless mode 🆕
 
-**Xcode 27 beta 5** adds `xcrun mcp-server`, a preview of an MCP server that runs without an open Xcode workspace, and that can grant code-signed agents access to a directory tree for a longer period instead of asking every time. Apple flags it as an early preview: some commands may not work in every configuration, and some settings or permissions may need an Xcode relaunch or a reboot to take effect.
+**Xcode 27** adds `xcrun mcp-server`, a preview of an MCP server that runs without an open Xcode workspace, and that can grant code-signed agents access to a directory tree for a longer period instead of asking every time. Apple flags it as an early preview: some commands may not work in every configuration, and some settings or permissions may need an Xcode relaunch or a reboot to take effect.
 
 ```bash
 sudo xcrun mcp-server enable
@@ -107,44 +107,43 @@ The tools that only make sense with a UI — the window list, the file the user 
 
 Every other tool that took a `tabIdentifier` takes a **`workspaceIdentifier`** instead: *"Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path."* It accepts either the identifier returned by `XcodeOpenWorkspace`/`XcodeListWorkspaces` (in practice something like `workspace-LKfjPJCMBL`) or the absolute path of the project. Prompts, skills, and scripts that hardcode `tabIdentifier` need updating for headless mode.
 
-[`DocumentationSearch`](#documentationsearch), which is hidden from `tools/list` in the windowed server since beta 4, is listed normally in headless mode.
+[`DocumentationSearch`](#documentationsearch), which is hidden from `tools/list` in the windowed server, is listed normally in headless mode.
 
 ## Schema
 
-[tools.json](tools.json) contains the full MCP tool definitions (name, title, description, input/output schemas) generated directly from `xcrun mcpbridge` against a running Xcode. [tools-headless.json](tools-headless.json) is the same listing captured from [headless mode](#headless-mode) — 54 tools instead of 53, see [Tool surface in headless mode](#tool-surface-in-headless-mode) for the differences.
+[tools.json](tools.json) contains the full MCP tool definitions (name, title, description, input/output schemas) generated directly from `xcrun mcpbridge` against a running Xcode. [tools-headless.json](tools-headless.json) is the same listing captured from [headless mode](#headless-mode) — 54 tools instead of 53, see [Tool surface in headless mode](#tool-surface-in-headless-mode) for the differences. [tools-26.5.json](tools-26.5.json) is the same listing from the current release, **Xcode 26.5** (21 tools), kept as the baseline for [What's new in Xcode 27](#whats-new-in-xcode-27).
 
 The tool sections below document the windowed server; in headless mode read `tabIdentifier` as `workspaceIdentifier`.
 
-## Xcode 27 beta 5 changes
+## What's new in Xcode 27
+
+Everything below compares **Xcode 27 beta 5** against the current release, **Xcode 26.5** — 21 tools → 53 windowed, 54 headless. Both schemas were captured from `tools/list`: [tools-26.5.json](tools-26.5.json) and [tools.json](tools.json). 🆕 in the sections below marks a tool that doesn't exist in Xcode 26.5.
+
+### Server
 
 - **Added:** `xcrun mcp-server` — headless MCP server that runs without an open workspace, plus durable per-agent/per-folder permissions; see [Headless mode](#headless-mode)
-- **Added (headless only):** [`XcodeListWorkspaces`](#xcodelistworkspaces), [`XcodeOpenWorkspace`](#xcodeopenworkspace), [`XcodeCloseWorkspace`](#xcodecloseworkspace), and [`XcodeNewProject`](#xcodenewproject) — manage the open workspace set and create projects from templates without a UI
-- **Changed (headless only):** `tabIdentifier` becomes `workspaceIdentifier` on every tool that had it, and takes a workspace identifier or an absolute path; [`XcodeListWindows`](#xcodelistwindows), [`XcodeGetCurrentFile`](#xcodegetcurrentfile), and [`XcodeListNavigatorIssues`](#xcodelistnavigatorissues) are not exposed — see [Tool surface in headless mode](#tool-surface-in-headless-mode)
-- **Changed:** `mcpbridge` now connects to the `xcode-select` Xcode by default instead of auto-detecting a single running instance, and reaches the headless `XcodeService.app` when headless mode is on
-- **Added:** [`XcodeListTargets`](#xcodelisttargets) — lists targets with product type and role flags, optionally filtered by project or product type
-- **Added:** [`XcodeListTemplates`](#xcodelisttemplates) — lists target templates and their options, to feed `XcodeNewTarget`
-- **Added:** [`XcodeNewTarget`](#xcodenewtarget) — adds a target from a template, with template options, embedding, and project selection
-- **Added:** [`XcodeListTestPlans`](#xcodelisttestplans) and [`XcodeSwitchTestPlan`](#xcodeswitchtestplan) — inspect and change the active scheme's test plan, which all testing tools operate on
-- **Fixed:** [`XcodeMV`](#xcodemv)'s `operation` is now a plain string enum (`move`/`copy`); it used to be wrongly declared as an object with a `rawValue` field
-- **Changed:** [`InvokeDebuggerCommand`](#invokedebuggercommand) now tells callers to run `process status` first, before commands that require a stopped process
-- **Changed:** [`RenderPreview`](#renderpreview) output adds `displayName` and `sourceLineNumber`, identifying which preview was rendered
-- **Changed:** [`GetBuildLog`](#getbuildlog) output no longer requires `line` on an issue — issues without a line number are now representable
+- **Changed:** `mcpbridge` connects to the `xcode-select` Xcode by default (`MCP_XCODE_PID`/`MCP_XCODE_SESSION_ID` to override), and reaches the headless `XcodeService.app` when headless mode is on; it also gained the `run-agent` subcommand
+- **Changed:** `tabIdentifier` is no longer required on any tool — omit it when only one workspace tab is open. In headless mode it becomes `workspaceIdentifier` and takes a workspace identifier or an absolute path
 
-## Xcode 27 beta 4 changes
+### Added tools
 
-- **Hidden but functional:** [`DocumentationSearch`](#documentationsearch) — no longer appears in `tools/list`, but still works when called directly by name; see the note in its section for details
-- **Added:** [`DeviceInteractionStartWorkspaceSession`](#deviceinteractionstartworkspacesession) — workspace-bound device session, needed for `DeviceInteractionInstallAndRun`
-- **Changed:** [`DeviceInteractionStartSession`](#deviceinteractionstartsession) no longer takes `tabIdentifier` (it doesn't need a workspace) and now requires `deviceIdentifier`; use the new `DeviceInteractionStartWorkspaceSession` for install & run flows
-- **Changed:** `tabIdentifier` is no longer required on any tool — omit it when only one workspace tab is open
-- **Added:** optional `projectPath` parameter on [`AddEntitlement`](#addentitlement), [`AddInfoPlist`](#addinfoplist), [`GetTargetBuildSettings`](#gettargetbuildsettings), and [`UpdateTargetBuildSetting`](#updatetargetbuildsetting), to disambiguate same-named targets across multiple `.xcodeproj`s
-- **Added:** optional `activationBundleId` parameter on [`DeviceInteractionSynthesize`](#deviceinteractionsynthesize), to activate an app before interacting with it
+- **Workspace:** [`XcodeListSchemes`](#xcodelistschemes), [`XcodeSwitchScheme`](#xcodeswitchscheme), [`XcodeListRunDestinations`](#xcodelistrundestinations), [`XcodeSwitchRunDestination`](#xcodeswitchrundestination) — plus headless-only [`XcodeListWorkspaces`](#xcodelistworkspaces), [`XcodeOpenWorkspace`](#xcodeopenworkspace), [`XcodeCloseWorkspace`](#xcodecloseworkspace)
+- **Project configuration:** [`XcodeListTargets`](#xcodelisttargets), [`XcodeListTemplates`](#xcodelisttemplates), [`XcodeNewTarget`](#xcodenewtarget), [`AddEntitlement`](#addentitlement), [`AddInfoPlist`](#addinfoplist), [`GetTargetBuildSettings`](#gettargetbuildsettings), [`UpdateTargetBuildSetting`](#updatetargetbuildsetting), [`GetFileCompilerFlags`](#getfilecompilerflags), [`UpdateFileCompilerFlags`](#updatefilecompilerflags) — plus headless-only [`XcodeNewProject`](#xcodenewproject)
+- **Run & debug:** [`RunProject`](#runproject), [`StopProject`](#stopproject), [`GetConsoleOutput`](#getconsoleoutput), [`InvokeDebuggerCommand`](#invokedebuggercommand)
+- **Testing:** [`XcodeListTestPlans`](#xcodelisttestplans), [`XcodeSwitchTestPlan`](#xcodeswitchtestplan) — inspect and change the active scheme's test plan, which all testing tools operate on
+- **Device interaction:** [`DeviceInteractionStartSession`](#deviceinteractionstartsession), [`DeviceInteractionStartWorkspaceSession`](#deviceinteractionstartworkspacesession), [`DeviceInteractionInstallAndRun`](#deviceinteractioninstallandrun), [`DeviceInteractionSynthesize`](#deviceinteractionsynthesize), [`DeviceInteractionEndSession`](#deviceinteractionendsession)
+- **Crash & field performance:** [`GetTopCrashIssues`](#gettopcrashissues), [`GetCrashIssueLogs`](#getcrashissuelogs), [`GetTopFieldPerformanceIssues`](#gettopfieldperformanceissues), [`GetFieldPerformanceIssueLogs`](#getfieldperformanceissuelogs)
+- **Localization:** [`StringCatalogRead`](#stringcatalogread), [`StringCatalogContext`](#stringcatalogcontext), [`StringCatalogEdit`](#stringcatalogedit), [`LocalizationPlanner`](#localizationplanner)
 
-## Xcode 27 beta 1 changes
+### Changed tools
 
-> 🆕 marks tools added in **Xcode 27 beta 1**.
-
-- **Renamed:** `ExecuteSnippet` → [`RunCodeSnippet`](#runcodesnippet) (gained a required `purpose` parameter)
-- **Added:** scheme/run-destination management, project configuration (entitlements, Info.plist, build settings, per-file compiler flags), running & debugging on the active scheme, device interaction, crash & field performance reporting, and String Catalog/localization tools — see sections marked 🆕 below
+- **Renamed:** `ExecuteSnippet` → [`RunCodeSnippet`](#runcodesnippet), which gained a required `purpose` parameter
+- **Hidden but functional:** [`DocumentationSearch`](#documentationsearch) — listed in Xcode 26.5, gone from `tools/list` in the windowed server in 27, but still works when called directly by name; its results gained a `kind` field. Listed normally in [headless mode](#headless-mode)
+- **Fixed:** [`XcodeMV`](#xcodemv)'s `operation` is now a plain string enum (`move`/`copy`); in 26.5 it was declared as an object with a `rawValue` field
+- [`BuildProject`](#buildproject): new `buildForTesting` parameter — also build test targets that a regular build would skip
+- [`GetBuildLog`](#getbuildlog): `line` is no longer required on an issue — issues without a line number are now representable
+- [`RunAllTests`](#runalltests) / [`RunSomeTests`](#runsometests): output adds `xcresultBundlePath` for `xcresulttool`/`xccov`
+- [`RenderPreview`](#renderpreview): new `previewCanvasControlOverrides` (timeline, toggle, group item) and `previewLocalizationOverride` parameters; output adds `displayName`, `sourceLineNumber`, `renderedDestination`, `supportedCanvasControlOverrides`, and `supportedLocalizations`
 
 ## Table of Contents
 
@@ -153,7 +152,7 @@ The tool sections below document the windowed server; in headless mode read `tab
   - [XcodeListWorkspaces](#xcodelistworkspaces) 🆕
   - [XcodeOpenWorkspace](#xcodeopenworkspace) 🆕
   - [XcodeCloseWorkspace](#xcodecloseworkspace) 🆕
-  - [XcodeGetCurrentFile](#xcodegetcurrentfile) 🆕
+  - [XcodeGetCurrentFile](#xcodegetcurrentfile)
   - [XcodeListSchemes](#xcodelistschemes) 🆕
   - [XcodeSwitchScheme](#xcodeswitchscheme) 🆕
   - [XcodeListRunDestinations](#xcodelistrundestinations) 🆕
@@ -169,10 +168,10 @@ The tool sections below document the windowed server; in headless mode read `tab
   - [XcodeMV](#xcodemv)
   - [XcodeRM](#xcoderm)
 - **[Project Configuration](#project-configuration)** 🆕
-  - [XcodeListTargets](#xcodelisttargets)
-  - [XcodeListTemplates](#xcodelisttemplates)
+  - [XcodeListTargets](#xcodelisttargets) 🆕
+  - [XcodeListTemplates](#xcodelisttemplates) 🆕
   - [XcodeNewProject](#xcodenewproject) 🆕
-  - [XcodeNewTarget](#xcodenewtarget)
+  - [XcodeNewTarget](#xcodenewtarget) 🆕
   - [AddEntitlement](#addentitlement) 🆕
   - [AddInfoPlist](#addinfoplist) 🆕
   - [GetTargetBuildSettings](#gettargetbuildsettings) 🆕
@@ -188,8 +187,8 @@ The tool sections below document the windowed server; in headless mode read `tab
   - [GetConsoleOutput](#getconsoleoutput) 🆕
   - [InvokeDebuggerCommand](#invokedebuggercommand) 🆕
 - **[Testing](#testing)**
-  - [XcodeListTestPlans](#xcodelisttestplans)
-  - [XcodeSwitchTestPlan](#xcodeswitchtestplan)
+  - [XcodeListTestPlans](#xcodelisttestplans) 🆕
+  - [XcodeSwitchTestPlan](#xcodeswitchtestplan) 🆕
   - [GetTestList](#gettestlist)
   - [RunAllTests](#runalltests)
   - [RunSomeTests](#runsometests)
@@ -198,7 +197,7 @@ The tool sections below document the windowed server; in headless mode read `tab
   - [XcodeListNavigatorIssues](#xcodelistnavigatorissues)
 - **[Device Interaction](#device-interaction)** 🆕
   - [DeviceInteractionStartSession](#deviceinteractionstartsession) 🆕
-  - [DeviceInteractionStartWorkspaceSession](#deviceinteractionstartworkspacesession)
+  - [DeviceInteractionStartWorkspaceSession](#deviceinteractionstartworkspacesession) 🆕
   - [DeviceInteractionInstallAndRun](#deviceinteractioninstallandrun) 🆕
   - [DeviceInteractionSynthesize](#deviceinteractionsynthesize) 🆕
   - [DeviceInteractionEndSession](#deviceinteractionendsession) 🆕
@@ -275,7 +274,7 @@ Closes a workspace previously opened with `XcodeOpenWorkspace`.
 XcodeCloseWorkspace(workspaceIdentifier: "workspace-LKfjPJCMBL")
 ```
 
-### XcodeGetCurrentFile 🆕
+### XcodeGetCurrentFile
 
 Gets information about the currently active file in the Xcode editor, including file path, content, and selection. Returns content in `cat -n` format. Not available in [headless mode](#headless-mode), which has no editor.
 
@@ -525,7 +524,7 @@ XcodeRM(tabIdentifier: "...", path: "MyApp/Sources/Deprecated.swift")
 
 ## Project Configuration 🆕
 
-### XcodeListTargets
+### XcodeListTargets 🆕
 
 Lists targets in the workspace, optionally scoped to one project. Each entry carries the target name, containing project, product type, and role flags (`isTestTarget`, `supportsHostingTests`, `isAppExtension`, `isAggregate`). Hidden synthetic blueprints and Swift package products are excluded. Inline results are capped at 100; the full list is written to `fullTargetListPath` in grep-friendly format (`TARGET_NAME`, `CONTAINING_PROJECT`, `PRODUCT_TYPE_IDENTIFIER`, ...). Pass the returned `containingProjectPath` back as `projectPath` to other target-aware tools.
 
@@ -540,7 +539,7 @@ Lists targets in the workspace, optionally scoped to one project. Each entry car
 XcodeListTargets(tabIdentifier: "...", productTypeFilter: ["application"])
 ```
 
-### XcodeListTemplates
+### XcodeListTemplates 🆕
 
 Lists the target templates available in this Xcode install, with the option schema for each — the source of `templateIdentifier` and option keys for `XcodeNewTarget`. The unfiltered listing is large (~200 templates) and returns empty `options` for each entry; always pass at least one filter to get full options. Inline results are capped at 100; the complete list is written to `fullTemplateListPath`.
 
@@ -577,7 +576,7 @@ Creates a new Xcode project from a template and writes it to disk in a subdirect
 XcodeNewProject(templateIdentifier: "com.apple.dt.unit.multiplatformApp", productName: "MyApp", destinationPath: "/Users/username/Developer", options: ["languageChoice": "SwiftUI"])
 ```
 
-### XcodeNewTarget
+### XcodeNewTarget 🆕
 
 Adds a target to a project from a template. Discover `templateIdentifier` values and their options with `XcodeListTemplates`. Some templates derive a different target name from `productName` (e.g. Widget Extension appends `Extension`) — use the returned `targetName` for follow-up calls. If "Autocreate schemes" is on, a scheme may be created and activated; the result reports `activeSchemeName`.
 
@@ -736,15 +735,16 @@ UpdateFileCompilerFlags(
 
 ### BuildProject
 
-Builds the Xcode project using the active scheme and waits for completion.
+Builds the Xcode project using the active scheme and waits for completion. The result carries the build outcome, any errors, and `fullLogPath` — the complete build log with command lines and task output.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `tabIdentifier` | string | No | Workspace tab identifier |
+| `buildForTesting` | boolean | No | 🆕 Also build test targets that a regular build would skip |
 
 **Example:**
 ```
-BuildProject(tabIdentifier: "...")
+BuildProject(buildForTesting: true)
 ```
 
 ### GetBuildLog
@@ -765,7 +765,7 @@ GetBuildLog(tabIdentifier: "...", severity: "warning")
 
 ### RunCodeSnippet
 
-> Renamed from `ExecuteSnippet` in Xcode 27 beta 1, and gained a required `purpose` parameter.
+> Renamed from `ExecuteSnippet` in Xcode 27, and gained a required `purpose` parameter.
 
 Builds and runs a code snippet in the context of a specific source file and waits for the result. The snippet has access to all declarations in that file, including `fileprivate` ones. Output comes from `print` statements. Only works with source files in targets that build apps, frameworks, libraries, or CLI executables.
 
@@ -855,7 +855,7 @@ InvokeDebuggerCommand(tabIdentifier: "...", command: "po self.viewModel")
 
 ## Testing
 
-### XcodeListTestPlans
+### XcodeListTestPlans 🆕
 
 Lists the test plans of the active scheme and identifies the active one. All testing tools (`GetTestList`, `RunAllTests`, `RunSomeTests`) and build-for-testing operate on the active plan. If the scheme hasn't been upgraded to test plans, `usesTestPlans` is `false` and `testPlans` is empty. Inline results are capped at 100 (active plan first); the full list goes to `fullTestPlanListPath`.
 
@@ -868,7 +868,7 @@ Lists the test plans of the active scheme and identifies the active one. All tes
 XcodeListTestPlans(tabIdentifier: "...")
 ```
 
-### XcodeSwitchTestPlan
+### XcodeSwitchTestPlan 🆕
 
 Changes the active test plan of the active scheme — the same persistent change as picking a plan in Xcode's test plan picker. Discover names with `XcodeListTestPlans`; when two plans share a name, pass the reported `path` (or an unambiguous trailing portion of it).
 
@@ -897,7 +897,7 @@ GetTestList(tabIdentifier: "...")
 
 ### RunAllTests
 
-Runs every test in the active scheme's active test plan.
+Runs every test in the active scheme's active test plan. Alongside the per-test results the output carries paths for anything truncated: `fullSummaryPath`, `fullConsoleLogsPath` (everything `print`/`NSLog` emitted during build and run), and 🆕 `xcresultBundlePath` — the `.xcresult` bundle for `xcresulttool`, or `xccov` when coverage is enabled.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -910,7 +910,7 @@ RunAllTests(tabIdentifier: "...")
 
 ### RunSomeTests
 
-Runs specific tests by target and identifier. Use `GetTestList` first to discover available test identifiers.
+Runs specific tests by target and identifier. Use `GetTestList` first to discover available test identifiers. Output matches [`RunAllTests`](#runalltests), including `xcresultBundlePath`.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -991,7 +991,7 @@ Prepares a runtime for device interaction **without** a workspace — finds and,
 DeviceInteractionStartSession(deviceIdentifier: "iPhone 17 Pro", sessionIdentifier: "Verify Login Flow")
 ```
 
-### DeviceInteractionStartWorkspaceSession
+### DeviceInteractionStartWorkspaceSession 🆕
 
 Prepares a runtime for device interaction **with** a workspace. Same as `DeviceInteractionStartSession`, but bound to the workspace: it only offers devices the active scheme can run on, and enables installing & running the project via `DeviceInteractionInstallAndRun`. Do not call it if the app doesn't need to be built and installed on a device.
 
@@ -1229,20 +1229,26 @@ LocalizationPlanner(tabIdentifier: "...", targetLocaleIdentifier: "de")
 
 ### RenderPreview
 
-Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. The result identifies which preview was rendered via `displayName` and `sourceLineNumber`, matching the title and "Line N" subtitle in Xcode's canvas.
+Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. The result identifies which preview was rendered via `displayName` and `sourceLineNumber`, matching the title and "Line N" subtitle in Xcode's canvas, and reports the actual `renderedDestination` (platform, device model, OS version), which may differ from the workspace's selected run destination.
+
+The override parameters are discovery-driven: call the tool once, read `supportedLocalizations`, `supportedPreviewVariantOverrides`, and `supportedCanvasControlOverrides` from the result, then pass values from those back in.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `tabIdentifier` | string | No | Workspace tab identifier |
 | `sourceFilePath` | string | Yes | Project-relative path to the file containing the preview |
 | `previewDefinitionIndexInFile` | integer | No | Zero-based index of the `#Preview` macro or `PreviewProvider` in the file. Default: `0` |
+| `previewCanvasControlOverrides` | object | No | 🆕 Canvas controls to override: `timelineIndex` (timeline position for Widgets/Live Activities), `toggleState` (boolean toggle control), `groupItemIndex` (which item of a `#Preview(arguments:)` set). Only meaningful for the controls listed in `supportedCanvasControlOverrides` |
+| `previewLocalizationOverride` | string | No | 🆕 Locale identifier to preview in (e.g. `"fr"`, `"ja"`), from `supportedLocalizations`. Don't call the tool in parallel when this is set |
+| `previewVariantOverrides` | object | No | Variant group name → variant name, from `supportedPreviewVariantOverrides` (e.g. color scheme, dynamic type) |
 | `timeout` | integer | No | Max wait time in seconds. Default: 120 |
 
 **Example:**
 ```
 RenderPreview(
-  tabIdentifier: "...",
-  sourceFilePath: "MyApp/Sources/Views/ProfileView.swift"
+  sourceFilePath: "MyApp/Sources/Views/ProfileView.swift",
+  previewLocalizationOverride: "ja",
+  previewCanvasControlOverrides: { timelineIndex: 2 }
 )
 ```
 
@@ -1252,7 +1258,7 @@ RenderPreview(
 
 ### DocumentationSearch ⚠️
 
-> **Status in Xcode 27 beta 5:** absent from `tools/list` — a standard MCP client won't discover it through normal enumeration. It's still implemented and works when called directly by name: it's gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads), and returns `Tool 'DocumentationSearch' is not enabled.` until that asset finishes downloading/indexing. Once ready, direct calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template) and can call it once the asset is ready. In [headless mode](#headless-mode) the tool is listed normally.
+> **Status in Xcode 27:** absent from `tools/list` — a standard MCP client won't discover it through normal enumeration. It's still implemented and works when called directly by name: it's gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads), and returns `Tool 'DocumentationSearch' is not enabled.` until that asset finishes downloading/indexing. Once ready, direct calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template) and can call it once the asset is ready. In [headless mode](#headless-mode) the tool is listed normally.
 
 Searches Apple Developer Documentation using semantic matching. Useful for looking up APIs, frameworks, and usage patterns.
 
