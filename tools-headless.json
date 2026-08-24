@@ -292,7 +292,7 @@
     {
       "name": "DeviceInteractionStartSession",
       "title": "Start Device Interaction Session",
-      "description": "Prepares a runtime for iOS interaction WITHOUT a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing work.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nThis session cannot build or install the project. If you need to install&run the app you are\nworking on, use DeviceInteractionStartWorkspaceSession instead.",
+      "description": "Prepares a runtime for device interaction WITHOUT a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing work.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nThis session cannot build or install the project. If you need to install&run the app you are\nworking on, use DeviceInteractionStartWorkspaceSession instead.",
       "inputSchema": {
         "properties": {
           "deviceIdentifier": {
@@ -346,7 +346,7 @@
     {
       "name": "DeviceInteractionStartWorkspaceSession",
       "title": "Start Device Interaction Workspace Session",
-      "description": "Prepares a runtime for iOS interaction WITH a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing feature development.\nBecause it is bound to the workspace, it only offers devices the current scheme can run on, and it\nenables installing&running the project via DeviceInteractionInstallAndRun.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nDo NOT call this if the application you are working on doesn't have to be built and installed on a device.",
+      "description": "Prepares a runtime for device interaction WITH a workspace. This should be called as early as possible if device interaction will be needed.\n\nInvoke this tool if you are going to perform runtime verification on a device/simulator.\nThis tool finds and (if necessary) boots a desired device. The action may take time,\nso this should be invoked early in the process to prepare the device in parallel with ongoing feature development.\nBecause it is bound to the workspace, it only offers devices the current scheme can run on, and it\nenables installing&running the project via DeviceInteractionInstallAndRun.\nKeeping the session open is expensive, so call DeviceInteractionEndSession to close the session once\ninteraction is finished.\n\nDo NOT call this if the application you are working on doesn't have to be built and installed on a device.",
       "inputSchema": {
         "properties": {
           "deviceIdentifier": {
@@ -1518,22 +1518,22 @@
             "type": "array"
           },
           "previewSnapshotPath": {
-            "description": "The path to the image snapshot of the requested preview.",
+            "description": "The path to the image snapshot of the requested preview.  Areas of the framebuffer that are not visible on the screen of the render destination device model are transparent.",
             "type": "string"
           },
           "renderedDestination": {
-            "description": "Describes the run destination that the preview was actually rendered against (e.g. which simulator). May differ from the workspace's currently-selected run destination if the pipeline picked a different one for this preview. Omitted if the destination could not be determined.",
+            "description": "Describes the render destination that the preview was rendered on. May differ from the workspace's currently-selected run destination if the pipeline picked a different one for this preview. Omitted if the render destination could not be determined.",
             "properties": {
               "deviceModelName": {
-                "description": "Display name of the device model that the preview was rendered for (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d). Omitted if not known.",
+                "description": "Display name of the device model of the render destination (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d). Omitted if not known.",
                 "type": "string"
               },
               "platformName": {
-                "description": "Display name of the platform that the preview was rendered for (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d). Omitted if not known.",
+                "description": "Display name of the platform of the render destination (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d). Omitted if not known.",
                 "type": "string"
               },
               "systemVersion": {
-                "description": "Operating system version that the preview was rendered for, in major.minor[.patch] form (e.g. \u201c17.2\u201d). Omitted if not known.",
+                "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. \u201c17.2\u201d). Omitted if not known.",
                 "type": "string"
               }
             },

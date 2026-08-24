@@ -2,7 +2,7 @@
 
 A comprehensive reference for the Xcode MCP Server aka Xcode Tools. These tools enable AI assistants to interact with Xcode workspaces — managing files, building projects, running tests, rendering previews, and more.
 
-> Reflects **Xcode 27 beta 5**. Everything marked 🆕 or listed under [What's new in Xcode 27](#whats-new-in-xcode-27) is relative to the current release, **Xcode 26.5**.
+> Reflects **Xcode 27 beta 6** (27A5252f). Everything marked 🆕 or listed under [What's new in Xcode 27](#whats-new-in-xcode-27) is relative to the current release, **Xcode 26.5**.
 
 <p align="center">
   <img src=".github/screenshot.png" width="60%"/>
@@ -138,7 +138,7 @@ Everything below compares **Xcode 27 beta 5** against the current release, **Xco
 ### Changed tools
 
 - **Renamed:** `ExecuteSnippet` → [`RunCodeSnippet`](#runcodesnippet), which gained a required `purpose` parameter
-- **Hidden but functional:** [`DocumentationSearch`](#documentationsearch) — listed in Xcode 26.5, gone from `tools/list` in the windowed server in 27, but still works when called directly by name; its results gained a `kind` field. Listed normally in [headless mode](#headless-mode)
+- **Asset-gated:** [`DocumentationSearch`](#documentationsearch) — its results gained a `kind` field. In 27 the tool is gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset; earlier 27 betas didn't list it in the windowed server's `tools/list`. On beta 6 with the asset installed it's listed normally by both the windowed and headless servers
 - **Fixed:** [`XcodeMV`](#xcodemv)'s `operation` is now a plain string enum (`move`/`copy`); in 26.5 it was declared as an object with a `rawValue` field
 - [`BuildProject`](#buildproject): new `buildForTesting` parameter — also build test targets that a regular build would skip
 - [`GetBuildLog`](#getbuildlog): `line` is no longer required on an issue — issues without a line number are now representable
@@ -1229,7 +1229,7 @@ LocalizationPlanner(tabIdentifier: "...", targetLocaleIdentifier: "de")
 
 ### RenderPreview
 
-Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. The result identifies which preview was rendered via `displayName` and `sourceLineNumber`, matching the title and "Line N" subtitle in Xcode's canvas, and reports the actual `renderedDestination` (platform, device model, OS version), which may differ from the workspace's selected run destination.
+Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. The result identifies which preview was rendered via `displayName` and `sourceLineNumber`, matching the title and "Line N" subtitle in Xcode's canvas, and reports the actual `renderedDestination` (platform, device model, OS version), which may differ from the workspace's selected run destination. In the snapshot at `previewSnapshotPath`, areas of the framebuffer that fall outside the render destination's device screen are transparent.
 
 The override parameters are discovery-driven: call the tool once, read `supportedLocalizations`, `supportedPreviewVariantOverrides`, and `supportedCanvasControlOverrides` from the result, then pass values from those back in.
 
@@ -1258,7 +1258,7 @@ RenderPreview(
 
 ### DocumentationSearch ⚠️
 
-> **Status in Xcode 27:** absent from `tools/list` — a standard MCP client won't discover it through normal enumeration. It's still implemented and works when called directly by name: it's gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads), and returns `Tool 'DocumentationSearch' is not enabled.` until that asset finishes downloading/indexing. Once ready, direct calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template) and can call it once the asset is ready. In [headless mode](#headless-mode) the tool is listed normally.
+> **Status in Xcode 27:** gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads) — until it finishes downloading/indexing, the tool returns `Tool 'DocumentationSearch' is not enabled.` Earlier 27 betas also left it out of the windowed server's `tools/list`, so a standard MCP client couldn't discover it through normal enumeration, though it still worked when called directly by name. Verified on beta 6 with the asset installed: it's listed normally by both the windowed and headless servers, and calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template).
 
 Searches Apple Developer Documentation using semantic matching. Useful for looking up APIs, frameworks, and usage patterns.
 
