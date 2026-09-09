@@ -2,7 +2,7 @@
 
 A reference for the Xcode MCP Server aka Xcode Tools — the tools that let an AI assistant drive Xcode: browse and edit the project, build, run, test, render previews, and more.
 
-> Reflects **Xcode 27 beta 6** (27A5252f). 🆕 marks anything that doesn't exist in the current release, **Xcode 26.5** — see [What's new in Xcode 27](#whats-new-in-xcode-27).
+> Reflects **Xcode 27 RC** (27A266a) — 53 tools in the windowed server, 54 headless, plus the [agent tooling](#agent-tooling-) around it. 🆕 marks anything that doesn't exist in the current release, **Xcode 26.5** — see [What's new in Xcode 27](#whats-new-in-xcode-27).
 
 <p align="center">
   <img src=".github/screenshot.png" width="60%"/>
@@ -32,9 +32,10 @@ codex mcp add xcode -- xcrun mcpbridge
 
 | Piece | What it is |
 |---|---|
-| `xcrun mcpbridge` | The stdio MCP server your agent talks to. Connects to the Xcode selected by `xcode-select`; `MCP_XCODE_PID` targets a specific instance, `MCP_XCODE_SESSION_ID` passes a session UUID. Its `run-agent` subcommand launches a coding agent pre-configured with these tools (`xcrun mcpbridge run-agent claude`, `--dry-run`, `--no-xcode-tools`), and `run-agent skills` inspects and exports Xcode's own skills. |
+| `xcrun mcpbridge` | The stdio MCP server your agent talks to. Connects to the Xcode selected by `xcode-select`; `MCP_XCODE_PID` targets a specific instance, `MCP_XCODE_SESSION_ID` passes a session UUID. Its `run-agent` subcommand launches a coding agent pre-configured with these tools (`xcrun mcpbridge run-agent claude`, `--dry-run`, `--no-xcode-tools`); `run-agent skills` exports Xcode's own skills and `run-agent plugin` 🆕 materializes them as an agent plugin. See [Agent tooling](#agent-tooling-). |
 | **Windowed mode** | The default: tools act on a workspace open in an Xcode window. This is what the tool reference below documents. |
 | **Headless mode** 🆕 | `xcrun mcp-server` — the same engine with no window and longer-lived permissions. The same `xcrun mcpbridge` command reaches it. See [Headless mode](#headless-mode-). |
+| `xcrun lldb-mcp` 🆕 | A second, separate MCP server that exposes LLDB directly — `command` and `debugger_list`. Nothing to do with the Xcode tool surface below. See [Agent tooling](#agent-tooling-). |
 | Schema files | [tools.json](tools.json), [tools-headless.json](tools-headless.json), [tools-26.5.json](tools-26.5.json) — the raw `tools/list` output. See [Schema](#schema). |
 
 ## Tools at a glance
@@ -1209,7 +1210,7 @@ RenderPreview(
 
 ### DocumentationSearch ⚠️
 
-> **Status in Xcode 27:** gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads) — until it finishes downloading/indexing, the tool returns `Tool 'DocumentationSearch' is not enabled.` Earlier 27 betas also left it out of the windowed server's `tools/list`, so a standard MCP client couldn't discover it through normal enumeration, though it still worked when called directly by name. Verified on beta 6 with the asset installed: it's listed normally by both the windowed and headless servers, and calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template).
+> **Status in Xcode 27:** gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads) — until it finishes downloading/indexing, the tool returns `Tool 'DocumentationSearch' is not enabled.` The gate also hides it from `tools/list`, so a standard MCP client can't discover it at all: on a fresh Xcode 27 RC install the headless server listed 53 tools without it, and after the documentation finished downloading the same server listed 54 with it. Once the asset is in place it's listed normally by both the windowed and headless servers and calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template).
 
 Searches Apple Developer Documentation using semantic matching. Useful for looking up APIs, frameworks, and usage patterns.
 
@@ -1239,14 +1240,25 @@ sudo xcrun mcp-server enable
 
 | Command | Description |
 |---------|-------------|
-| `start` / `stop` | Launch or terminate the server (no-op if already in that state) |
 | `open <paths>` | Launch if needed, then open workspaces/projects |
+| `stop` | Terminate the running server (no-op if not running) |
 | `enable` / `disable` | Turn headless mode on/off (sudo) |
-| `status` | Report permissions and, when running, the open workspaces. `--format text\|json` |
+| `status` | Report permissions and, when running, the open workspaces |
 | `approve <id>` | Approve a pending agent or folder request (sudo). `--always` (signed agents and folders only) or `--for-24-hours` |
 | `allow-folder <path>` | Permit workspaces under a folder without waiting for a request (sudo). `--always` or `--for-24-hours` |
 | `deny <id>` | Deny a pending request, permitted agent, or permitted folder (sudo); denying an agent also stops the server |
 | `clear-permissions` | Remove all granted agent and folder permissions (sudo) |
+| `reset-all` | Delete all permission state and kill the server immediately (sudo); next use shows onboarding again |
+| `show-logs` | Dump the agent activity log to a file and print its path. Without a running server it collects the last 24 hours |
+
+Every subcommand takes `--format text\|json`. There is no `start` — `open` launches the server.
+
+`show-logs` is the audit trail: one line per agent connection, with the binary path, PID, signing team, and a summary on disconnect.
+
+```
+Xcode Service[850]: agent: Xcode/copilot-xcode [9d474085] | connected | binary: … | pid: 735 | signed by: VEKTX9H2N7 | version: 27.0/0.51.0
+Xcode Service[55388]: agent: Claude Code [11bcb302] | disconnected | 25 tool calls over 15h 57m 48s
+```
 
 Request and permission ids come from `mcp-server status`. For unattended environments, `sudo xcrun mcp-server enable --unsafe-always-allow-all-agents` approves every agent upfront — Apple does not recommend it for at-desk use.
 
@@ -1295,7 +1307,43 @@ The tools that only make sense with a UI — the window list, the file the user 
 
 Every other tool that took a `tabIdentifier` takes a **`workspaceIdentifier`** instead: *"Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path."* It accepts either the identifier returned by `XcodeOpenWorkspace`/`XcodeListWorkspaces` (in practice something like `workspace-LKfjPJCMBL`) or the absolute path of the project. Prompts, skills, and scripts that hardcode `tabIdentifier` need updating for headless mode.
 
-[`DocumentationSearch`](#documentationsearch-), which is hidden from `tools/list` in the windowed server, is listed normally in headless mode.
+[`DocumentationSearch`](#documentationsearch-) behaves the same in both modes: listed once its documentation asset is installed, absent from `tools/list` while it isn't.
+
+## Agent tooling 🆕
+
+Around the MCP server Xcode 27 ships a launcher for coding agents, an exporter for its own skills, and a second MCP server for LLDB.
+
+### `run-agent` — launch an agent the way Xcode does
+
+```bash
+xcrun mcpbridge run-agent claude      # or: xcrun agent claude
+xcrun agent --dry-run claude          # print the resolved command, launch nothing
+```
+
+`xcrun agent` is a shim for `mcpbridge run-agent`. Agents: `antigravity`, `claude`, `claude-ext`, `codex`, `mock-agent`.
+
+It launches Xcode's own copy of the agent (`~/Library/Developer/Xcode/CodingAssistant/Agents/`, version-pinned per Xcode build), checks its code signature, passes a temp `--mcp-config` with the `xcode-tools` server (`--no-xcode-tools` omits it), and injects Xcode's environment — `MCP_XCODE_PID` binds the session to that Xcode instance, `CLAUDE_CONFIG_DIR` points at a config dir separate from your own. It does **not** pass `--plugin-dir`, so the agent starts without Xcode's skills.
+
+### `plugin` / `skills` — Xcode's skills
+
+Xcode keeps its skills inside `IDEIntelligenceChat.framework` and renders them on demand into an agent plugin (`xcode-integration`, 15 skills):
+
+```bash
+xcrun agent plugin path --plugin-format claude|codex|gemini
+claude --plugin-dir "$(xcrun agent plugin path --plugin-format claude)"
+```
+
+The path is `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/<build>/<format>` — cached, and versioned per Xcode build. Each format differs only in packaging (`.claude-plugin/plugin.json` + an `.mcp.json` wired to `mcpbridge`, `.codex-plugin/plugin.json`, `gemini-extension.json`); the skills themselves are the same. Rendering needs a running Xcode or `XcodeService`, otherwise you get an empty scaffold.
+
+`skills export` writes bare skill directories instead, but only **10** of the 15 — without the three `accessibility-*` skills and the two [localization](#localization-) ones:
+
+```bash
+xcrun agent skills export --replace-existing ~/my-skills    # default: ./xcode-skills
+```
+
+### `lldb-mcp` 🆕
+
+`xcrun lldb-mcp` is a separate stdio MCP server (`lldb-mcp 0.1.0`) exposing LLDB rather than Xcode, with two tools: `command` (run an lldb command; optional `debugger` id or session URI) and `debugger_list`. To drive the debugger through Xcode instead, use [`InvokeDebuggerCommand`](#invokedebuggercommand-).
 
 ## Schema
 
@@ -1303,12 +1351,14 @@ Every other tool that took a `tabIdentifier` takes a **`workspaceIdentifier`** i
 
 ## What's new in Xcode 27
 
-Everything below compares **Xcode 27 beta 6** against the current release, **Xcode 26.5** — 21 tools → 53 windowed, 54 headless. Both schemas were captured from `tools/list`: [tools-26.5.json](tools-26.5.json) and [tools.json](tools.json). 🆕 throughout the [tool reference](#tool-reference) marks a tool that doesn't exist in Xcode 26.5.
+Everything below compares **Xcode 27 RC** (27A266a) against the current release, **Xcode 26.5** — 21 tools → 53 windowed, 54 headless. Both schemas were captured from `tools/list`: [tools-26.5.json](tools-26.5.json) and [tools.json](tools.json). 🆕 throughout the [tool reference](#tool-reference) marks a tool that doesn't exist in Xcode 26.5.
 
 ### Server
 
 - **Added:** `xcrun mcp-server` — headless MCP server that runs without an open workspace, plus durable per-agent/per-folder permissions; see [Headless mode](#headless-mode-)
-- **Changed:** `mcpbridge` connects to the `xcode-select` Xcode by default (`MCP_XCODE_PID`/`MCP_XCODE_SESSION_ID` to override), and reaches the headless `XcodeService.app` when headless mode is on; it also gained the `run-agent` subcommand
+- **Added:** `xcrun lldb-mcp` — a separate MCP server for LLDB; see [Agent tooling](#agent-tooling-)
+- **Changed:** `mcpbridge` connects to the `xcode-select` Xcode by default (`MCP_XCODE_PID`/`MCP_XCODE_SESSION_ID` to override), and reaches the headless `XcodeService.app` when headless mode is on
+- **Changed:** `run-agent` (which 26.5 already had) gained the `skills` and `plugin` subcommands — export Xcode's skills, or materialize them as an agent plugin; see [Agent tooling](#agent-tooling-)
 - **Changed:** `tabIdentifier` is no longer required on any tool — omit it when only one workspace tab is open. In headless mode it becomes `workspaceIdentifier` and takes a workspace identifier or an absolute path
 
 ### Added tools
@@ -1324,7 +1374,7 @@ Everything below compares **Xcode 27 beta 6** against the current release, **Xco
 ### Changed tools
 
 - **Renamed:** `ExecuteSnippet` → [`RunCodeSnippet`](#runcodesnippet), which gained a required `purpose` parameter
-- **Asset-gated:** [`DocumentationSearch`](#documentationsearch-) — its results gained a `kind` field. In 27 the tool is gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset; earlier 27 betas didn't list it in the windowed server's `tools/list`. On beta 6 with the asset installed it's listed normally by both the windowed and headless servers
+- **Asset-gated:** [`DocumentationSearch`](#documentationsearch-) — its results gained a `kind` field. In 27 the tool is gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset, and while the asset is missing the tool is absent from `tools/list` in both modes. With the asset installed it's listed normally by both servers
 - **Fixed:** [`XcodeMV`](#xcodemv)'s `operation` is now a plain string enum (`move`/`copy`); in 26.5 it was declared as an object with a `rawValue` field
 - [`BuildProject`](#buildproject): new `buildForTesting` parameter — also build test targets that a regular build would skip
 - [`GetBuildLog`](#getbuildlog): `line` is no longer required on an issue — issues without a line number are now representable
