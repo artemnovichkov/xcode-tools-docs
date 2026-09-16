@@ -2,7 +2,7 @@
 
 A reference for the Xcode MCP Server aka Xcode Tools — the tools that let an AI assistant drive Xcode: browse and edit the project, build, run, test, render previews, and more.
 
-> Reflects **Xcode 27 RC** (27A266a) — 53 tools in the windowed server, 54 headless, plus the [agent tooling](#agent-tooling-) around it. 🆕 marks anything that doesn't exist in the current release, **Xcode 26.5** — see [What's new in Xcode 27](#whats-new-in-xcode-27).
+> Reflects **Xcode 27 RC** (27A266a) — 53 tools in the windowed server, 54 headless, plus the [agent tooling](#agent-tooling-) around it. 🆕 marks anything that doesn't exist in the current release, **Xcode 26.5** — see [What's new in Xcode 27](#whats-new-in-xcode-27). Changes in **Xcode 27.2 beta** are noted separately — see [Xcode 27.2 beta](#xcode-272-beta).
 
 <p align="center">
   <img src=".github/screenshot.png" width="60%"/>
@@ -1183,6 +1183,8 @@ LocalizationPlanner(tabIdentifier: "...", targetLocaleIdentifier: "de")
 
 Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. The result identifies which preview was rendered via `displayName` and `sourceLineNumber`, matching the title and "Line N" subtitle in Xcode's canvas, and reports the actual `renderedDestination` (platform, device model, OS version), which may differ from the workspace's selected run destination. In the snapshot at `previewSnapshotPath`, areas of the framebuffer that fall outside the render destination's device screen are transparent.
 
+> **Xcode 27.2 beta:** the render destination can be picked. The result lists `availableRenderDestinations` for the active scheme, and `renderedDestination` gains a required `identifier`; pass one back in `preferredRenderDestination`. See [Xcode 27.2 beta](#xcode-272-beta).
+
 The override parameters are discovery-driven: call the tool once, read `supportedLocalizations`, `supportedPreviewVariantOverrides`, and `supportedCanvasControlOverrides` from the result, then pass values from those back in.
 
 | Parameter | Type | Required | Description |
@@ -1192,6 +1194,7 @@ The override parameters are discovery-driven: call the tool once, read `supporte
 | `previewDefinitionIndexInFile` | integer | No | Zero-based index of the `#Preview` macro or `PreviewProvider` in the file. Default: `0` |
 | `previewCanvasControlOverrides` | object | No | 🆕 Canvas controls to override: `timelineIndex` (timeline position for Widgets/Live Activities), `toggleState` (boolean toggle control), `groupItemIndex` (which item of a `#Preview(arguments:)` set). Only meaningful for the controls listed in `supportedCanvasControlOverrides` |
 | `previewLocalizationOverride` | string | No | 🆕 Locale identifier to preview in (e.g. `"fr"`, `"ja"`), from `supportedLocalizations`. Don't call the tool in parallel when this is set |
+| `preferredRenderDestination` | object | No | *Xcode 27.2 beta.* Destination to render on, matched by any of `identifier`, `platformName`, `deviceModelName`, `systemVersion` (values from `availableRenderDestinations`). Unset fields aren't constrained; first match wins. No match → automatic destination plus a message in `errors` |
 | `previewVariantOverrides` | object | No | Variant group name → variant name, from `supportedPreviewVariantOverrides` (e.g. color scheme, dynamic type) |
 | `timeout` | integer | No | Max wait time in seconds. Default: 120 |
 
@@ -1347,7 +1350,7 @@ xcrun agent skills export --replace-existing ~/my-skills    # default: ./xcode-s
 
 ## Schema
 
-[tools.json](tools.json) contains the full MCP tool definitions (name, title, description, input/output schemas) generated directly from `xcrun mcpbridge` against a running Xcode. [tools-headless.json](tools-headless.json) is the same listing captured from [headless mode](#headless-mode-) — 54 tools instead of 53, see [Tool surface in headless mode](#tool-surface-in-headless-mode) for the differences. [tools-26.5.json](tools-26.5.json) is the same listing from the current release, **Xcode 26.5** (21 tools), kept as the baseline for [What's new in Xcode 27](#whats-new-in-xcode-27).
+[tools.json](tools.json) contains the full MCP tool definitions (name, title, description, input/output schemas) generated directly from `xcrun mcpbridge` against a running Xcode. [tools-headless.json](tools-headless.json) is the same listing captured from [headless mode](#headless-mode-) — 54 tools instead of 53, see [Tool surface in headless mode](#tool-surface-in-headless-mode) for the differences. [tools-26.5.json](tools-26.5.json) is the same listing from the current release, **Xcode 26.5** (21 tools), kept as the baseline for [What's new in Xcode 27](#whats-new-in-xcode-27). [tools-headless-27.2.json](tools-headless-27.2.json) is the headless listing from **Xcode 27.2 beta** — see [Xcode 27.2 beta](#xcode-272-beta).
 
 ## What's new in Xcode 27
 
@@ -1380,6 +1383,13 @@ Everything below compares **Xcode 27 RC** (27A266a) against the current release,
 - [`GetBuildLog`](#getbuildlog): `line` is no longer required on an issue — issues without a line number are now representable
 - [`RunAllTests`](#runalltests) / [`RunSomeTests`](#runsometests): output adds `xcresultBundlePath` for `xcresulttool`/`xccov`
 - [`RenderPreview`](#renderpreview): new `previewCanvasControlOverrides` (timeline, toggle, group item) and `previewLocalizationOverride` parameters; output adds `displayName`, `sourceLineNumber`, `renderedDestination`, `supportedCanvasControlOverrides`, and `supportedLocalizations`
+
+## Xcode 27.2 beta
+
+The rest of this document reflects Xcode 27 RC; this section lists what **Xcode 27.2 beta** (27B5019j, server 25434.2; RC is 25317) changes on top of it. Captured from the headless server's `tools/list`: [tools-headless-27.2.json](tools-headless-27.2.json). The windowed server wasn't captured.
+
+- No tools added or removed
+- [`RenderPreview`](#renderpreview): new `preferredRenderDestination` parameter — pick the device or simulator to render on by `identifier`, `platformName`, `deviceModelName`, and/or `systemVersion`; falls back to the automatic destination with a message in `errors` when nothing matches. Output adds `availableRenderDestinations` (destinations for the active scheme), and `renderedDestination` gains a required `identifier`
 
 
 ## Apple Documentation
