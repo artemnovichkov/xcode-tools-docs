@@ -38,6 +38,14 @@ codex mcp add xcode -- xcrun mcpbridge
 | `xcrun lldb-mcp` 🆕 | A second, separate MCP server that exposes LLDB directly — `command` and `debugger_list`. Nothing to do with the Xcode tool surface below. See [Agent tooling](#agent-tooling-). |
 | Schema files | [tools.json](tools.json), [tools-headless.json](tools-headless.json), [tools-26.5.json](tools-26.5.json) — the raw `tools/list` output. See [Schema](#schema). |
 
+## Agent skill
+
+This reference is for humans. [`skills/xcode-mcp/`](skills/xcode-mcp/) is the same knowledge packaged as an **agent skill** — it teaches an assistant how to *drive* these tools well (which tools to chain, in what order, and the gotchas that bite) without dumping every schema into the context.
+
+```bash
+npx skills add artemnovichkov/xcode-tools-docs
+```
+
 ## Tools at a glance
 
 53 tools in the windowed server, 54 in [headless mode](#headless-mode-), 57 in total — each links to its full entry in the [tool reference](#tool-reference). Tools that exist in only one of the two modes are marked *(windowed only)* / *(headless only)*.
