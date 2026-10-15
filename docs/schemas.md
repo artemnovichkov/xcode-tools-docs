@@ -9,6 +9,7 @@ These files contain the raw `tools/list` output: tool names, titles, description
 | [tools.json](../tools.json) | 27 | `xcrun mcpbridge` connected to a running Xcode |
 | [tools-headless.json](../tools-headless.json) | 27 | [Headless server](headless.md) |
 | [tools-26.5.json](../tools-26.5.json) | 26.5 | Previous release, used as the comparison baseline |
-| [tools-headless-27.2.json](../tools-headless-27.2.json) | 27.2 beta | Headless server; the windowed server was not captured |
+| [tools-27.2.json](../tools-27.2.json) | 27.2 beta 2 (27B5028f) | `xcrun mcpbridge` connected to a running Xcode |
+| [tools-headless-27.2.json](../tools-headless-27.2.json) | 27.2 beta 2 (27B5028f) | Headless server |
 
 See the changelog for [changes since Xcode 26.5](../CHANGELOG.md#whats-new-in-xcode-27) and [additions in Xcode 27.2 beta](../CHANGELOG.md#xcode-272-beta).

@@ -1,7 +1,7 @@
 {
   "tools": [
     {
-      "description": "Add a new entitlement to the project's entitlements file.\n\nMost Apple APIs do NOT require an entitlement. Only use this tool when a\nfeature requires a code-signing entitlement. These are things like access\nto protected hardware, sandboxed data stores shared between apps, paid\ntransaction processing, or privileged inter-process communication.\n\nDo NOT use this tool or add an entitlement for:\n- Adding UI components or using standard frameworks (SwiftUI, UIKit, MapKit, AVFoundation, CoreLocation, etc.)\n- Privacy usage descriptions — those are Info.plist keys, not entitlements. You should use the AddInfoPlist tool.\n- General feature development that doesn't involve a restricted system capability\n\nWhen in doubt, do NOT call this tool or add an entitlement. If you run\ninto debugging issues after adopting a new API — such as failures\nconnecting to system XPC services — you can add the entitlement then.\n\nParameters:\n    - targetName: The name of the Xcode target to add the entitlement to. Use another tool to discover the target names if you don't already know them.\n    - entitlementKey: The entitlement key you want to add.\n    - entitlementValueType: The type of the value — 'bool', 'string', 'int', 'stringArray', or 'dictionary'.\n    - entitlementValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n    - entitlementValueItems: Array of strings (only for stringArray type).\n    - entitlementDictionaryItems: JSON-encoded dictionary (only for dictionary type).\n\nNote: It is IMPORTANT that you do not edit the entitlement file directly unless told to. ALWAYS call this tool if you need to change the entitlement file.",
+      "description": "Add a new entitlement to the project's entitlements file.\n\nMost Apple APIs do NOT require an entitlement. Only use this tool when a\nfeature requires a code-signing entitlement. These are things like access\nto protected hardware, sandboxed data stores shared between apps, paid\ntransaction processing, or privileged inter-process communication.\n\nDo NOT use this tool or add an entitlement for:\n- Adding UI components or using standard frameworks (SwiftUI, UIKit, MapKit, AVFoundation, CoreLocation, etc.)\n- Privacy usage descriptions \u2014 those are Info.plist keys, not entitlements. You should use the AddInfoPlist tool.\n- General feature development that doesn't involve a restricted system capability\n\nWhen in doubt, do NOT call this tool or add an entitlement. If you run\ninto debugging issues after adopting a new API \u2014 such as failures\nconnecting to system XPC services \u2014 you can add the entitlement then.\n\nParameters:\n    - targetName: The name of the Xcode target to add the entitlement to. Use another tool to discover the target names if you don't already know them.\n    - entitlementKey: The entitlement key you want to add.\n    - entitlementValueType: The type of the value \u2014 'bool', 'string', 'int', 'stringArray', or 'dictionary'.\n    - entitlementValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n    - entitlementValueItems: Array of strings (only for stringArray type).\n    - entitlementDictionaryItems: JSON-encoded dictionary (only for dictionary type).\n\nNote: It is IMPORTANT that you do not edit the entitlement file directly unless told to. ALWAYS call this tool if you need to change the entitlement file.",
       "inputSchema": {
         "properties": {
           "entitlementDictionaryItems": {
@@ -74,7 +74,7 @@
       "title": "Add Entitlement"
     },
     {
-      "description": "Add or update an Info.plist key in the project.\n\nUse this tool for app configuration metadata such as:\n- Privacy usage descriptions (e.g. NSCameraUsageDescription, NSLocationWhenInUseUsageDescription)\n- App Transport Security settings\n- Supported interface orientations\n- URL schemes and document types\n- Background modes\n- Bundle display name, version, or other app metadata\n\nThis is NOT for entitlements. If you need a restricted system capability\ngated by code signing (like Push Notifications, App Groups, or iCloud),\nuse the AddEntitlement tool instead.\n\nParameters:\n- targetName: The name of the Xcode target to add the Info.plist key to. Use another tool to discover the target names if you don't already know them.\n- infoPlistKey: The key for the info.plist value you want to add.\n- infoPlistValueType: The type of the value — 'bool', 'string', 'int', 'stringArray', or 'dictionaryArray'.\n- infoPlistValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n- infoPlistValueItems: Array of strings (only for stringArray type).\n- infoPlistDictionaryItems: JSON-encoded array of dictionaries (only for dictionaryArray type).\n\nIMPORTANT: Do NOT modify the Info.plist file directly. Always use this tool\nto add or edit Info.plist keys, even if the project has GENERATE_INFOPLIST_FILE enabled.",
+      "description": "Add or update an Info.plist key in the project.\n\nUse this tool for app configuration metadata such as:\n- Privacy usage descriptions (e.g. NSCameraUsageDescription, NSLocationWhenInUseUsageDescription)\n- App Transport Security settings\n- Supported interface orientations\n- URL schemes and document types\n- Background modes\n- Bundle display name, version, or other app metadata\n\nThis is NOT for entitlements. If you need a restricted system capability\ngated by code signing (like Push Notifications, App Groups, or iCloud),\nuse the AddEntitlement tool instead.\n\nParameters:\n- targetName: The name of the Xcode target to add the Info.plist key to. Use another tool to discover the target names if you don't already know them.\n- infoPlistKey: The key for the info.plist value you want to add.\n- infoPlistValueType: The type of the value \u2014 'bool', 'string', 'int', 'stringArray', or 'dictionaryArray'.\n- infoPlistValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n- infoPlistValueItems: Array of strings (only for stringArray type).\n- infoPlistDictionaryItems: JSON-encoded array of dictionaries (only for dictionaryArray type).\n\nIMPORTANT: Do NOT modify the Info.plist file directly. Always use this tool\nto add or edit Info.plist keys, even if the project has GENERATE_INFOPLIST_FILE enabled.",
       "inputSchema": {
         "properties": {
           "infoPlistDictionaryItems": {
@@ -904,7 +904,7 @@
       "title": "Get Field Performance Issue Logs"
     },
     {
-      "description": "Gets the additional per-file compiler flags for a single source file in a specific Xcode target — the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources. Returns an empty string when the file is a member of the target with no flags set. Use UpdateFileCompilerFlags to modify flags.\n\nNote: Per-file compiler flags are uncommon — most targets configure compilation through target build settings instead. Use this tool to inspect existing per-file flags (e.g. when checking why one file in a target compiles differently from its peers, such as adopting `-fbounds-safety` for a single file).\n\nNote about Swift: Values shown for `.swift` files may not actually affect builds because the unit of compilation for Swift is a module. Prefer OTHER_SWIFT_FLAGS at the target level.",
+      "description": "Gets the additional per-file compiler flags for a single source file in a specific Xcode target \u2014 the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources. Returns an empty string when the file is a member of the target with no flags set. Use UpdateFileCompilerFlags to modify flags.\n\nNote: Per-file compiler flags are uncommon \u2014 most targets configure compilation through target build settings instead. Use this tool to inspect existing per-file flags (e.g. when checking why one file in a target compiles differently from its peers, such as adopting `-fbounds-safety` for a single file).\n\nNote about Swift: Values shown for `.swift` files may not actually affect builds because the unit of compilation for Swift is a module. Prefer OTHER_SWIFT_FLAGS at the target level.",
       "inputSchema": {
         "properties": {
           "filePath": {
@@ -1277,11 +1277,11 @@
       "title": "Get Top Field Performance Issues"
     },
     {
-      "description": "Sends an lldb command to Xcode's active debugging session and returns the output.\nThe process must already be running with the debugger attached. You can use the\nRunProject tool with attachDebugger=true, if it isn't running and debugged already.\n\nSend any lldb command: 'bt', 'po variable', 'breakpoint set -n main', 'continue',\n'thread step-over', 'frame variable', etc. The command runs in the same lldb session\nas Xcode's debug console, so the agent and Xcode UI share the same debugging state.\n\nWhen you start using a debug session, you should call 'process status' to determine\nwhether the process is stopped or not, before calling any commands that require\nthe process to be stopped (like expressions). Do this unless you're already confident\nabout the running state.",
+      "description": "Sends an lldb command to Xcode's active debugging session and returns the output.\nThe process must already be running with the debugger attached. You can use the\nRunProject tool with attachDebugger=true, if it isn't running and debugged already.\n\nSend any lldb command: 'bt', 'p variable', 'breakpoint set -n main', 'continue',\n'thread step-over', 'v varName', etc. The command runs in the same lldb session\nas Xcode's debug console, so the agent and Xcode UI share the same debugging state.\n\nPrefer 'p' or 'v' over 'po' or 'expression' \u2014 they avoid unnecessary expression\nevaluation, which is faster. Only use 'po' or 'expression' when you specifically\nneed them (calling functions, casting, arithmetic).\n\nWhen you start using a debug session, you should call 'process status' to determine\nwhether the process is stopped or not, before calling any commands that require\nthe process to be stopped (like expressions). Do this unless you're already confident\nabout the running state.",
       "inputSchema": {
         "properties": {
           "command": {
-            "description": "The lldb command to execute in Xcode's active debug session (e.g., 'bt', 'po self', 'breakpoint set -n viewDidLoad', 'continue', 'thread step-over', 'frame variable').",
+            "description": "The lldb command to execute in Xcode's active debug session (e.g., 'bt', 'p self', 'v myVar', 'breakpoint set -n viewDidLoad', 'continue', 'thread step-over'). Prefer 'p' or 'v' over 'po'/'expression' \u2014 they avoid unnecessary expression evaluation.",
             "type": "string"
           },
           "timeout": {
@@ -1377,10 +1377,10 @@
       "inputSchema": {
         "properties": {
           "preferredRenderDestination": {
-            "description": "The render destination (device or simulator) to render the preview on, described by any combination of its `identifier`, `platformName`, `deviceModelName`, and `systemVersion`. Use values that were returned in one of the `availableRenderDestinations` entries by a previous invocation of this tool for the same active scheme. Any field left unset is not constrained, and the first available destination matching all specified fields is used. If omitted, the destination is chosen automatically (typically derived from the workspace’s currently-selected run destination). If no available destination matches the specified fields, the preview is rendered on the automatically-chosen destination instead and a message is added to the `errors` field.",
+            "description": "The render destination (device or simulator) to render the preview on, described by any combination of its `identifier`, `platformName`, `deviceModelName`, and `systemVersion`. Use values that were returned in one of the `availableRenderDestinations` entries by a previous invocation of this tool for the same active scheme. Any field left unset is not constrained, and the first available destination matching all specified fields is used. If omitted, the destination is chosen automatically (typically derived from the workspace\u2019s currently-selected run destination). If no available destination matches the specified fields, the preview is rendered on the automatically-chosen destination instead and a message is added to the `errors` field.",
             "properties": {
               "deviceModelName": {
-                "description": "Display name of the device model of the render destination (e.g. “iPhone 15 Pro”, “iPad Pro (11-inch) (2nd generation)”, “My Mac”).",
+                "description": "Display name of the device model of the render destination (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d).",
                 "type": "string"
               },
               "identifier": {
@@ -1388,11 +1388,11 @@
                 "type": "string"
               },
               "platformName": {
-                "description": "Display name of the platform of the render destination (e.g. “iOS Simulator”, “macOS”).",
+                "description": "Display name of the platform of the render destination (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d).",
                 "type": "string"
               },
               "systemVersion": {
-                "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. “17.2”).",
+                "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. \u201c17.2\u201d).",
                 "type": "string"
               }
             },
@@ -1456,7 +1456,7 @@
             "items": {
               "properties": {
                 "deviceModelName": {
-                  "description": "Display name of the device model of the render destination (e.g. “iPhone 15 Pro”, “iPad Pro (11-inch) (2nd generation)”, “My Mac”). Omitted if not known.",
+                  "description": "Display name of the device model of the render destination (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d). Omitted if not known.",
                   "type": "string"
                 },
                 "identifier": {
@@ -1464,11 +1464,11 @@
                   "type": "string"
                 },
                 "platformName": {
-                  "description": "Display name of the platform of the render destination (e.g. “iOS Simulator”, “macOS”). Omitted if not known.",
+                  "description": "Display name of the platform of the render destination (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d). Omitted if not known.",
                   "type": "string"
                 },
                 "systemVersion": {
-                  "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. “17.2”). Omitted if not known.",
+                  "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. \u201c17.2\u201d). Omitted if not known.",
                   "type": "string"
                 }
               },
@@ -1480,7 +1480,7 @@
             "type": "array"
           },
           "displayName": {
-            "description": "The display name of the rendered preview, matching the title shown for it in Xcode’s canvas tab. For a named `#Preview(\"Some Name\")` this is the given name; for an unnamed `#Preview` it is derived from the file name; for a `PreviewProvider` it is derived from the type name.",
+            "description": "The display name of the rendered preview, matching the title shown for it in Xcode\u2019s canvas tab. For a named `#Preview(\"Some Name\")` this is the given name; for an unnamed `#Preview` it is derived from the file name; for a `PreviewProvider` it is derived from the type name.",
             "type": "string"
           },
           "errors": {
@@ -1507,7 +1507,7 @@
             "description": "Describes the render destination that the preview was rendered on. May differ from the workspace's currently-selected run destination if the pipeline picked a different one for this preview. Omitted if the render destination could not be determined.",
             "properties": {
               "deviceModelName": {
-                "description": "Display name of the device model of the render destination (e.g. “iPhone 15 Pro”, “iPad Pro (11-inch) (2nd generation)”, “My Mac”). Omitted if not known.",
+                "description": "Display name of the device model of the render destination (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d). Omitted if not known.",
                 "type": "string"
               },
               "identifier": {
@@ -1515,11 +1515,11 @@
                 "type": "string"
               },
               "platformName": {
-                "description": "Display name of the platform of the render destination (e.g. “iOS Simulator”, “macOS”). Omitted if not known.",
+                "description": "Display name of the platform of the render destination (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d). Omitted if not known.",
                 "type": "string"
               },
               "systemVersion": {
-                "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. “17.2”). Omitted if not known.",
+                "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. \u201c17.2\u201d). Omitted if not known.",
                 "type": "string"
               }
             },
@@ -1529,7 +1529,7 @@
             "type": "object"
           },
           "sourceLineNumber": {
-            "description": "The 1-based line number in the source file where the rendered preview is defined. Useful for disambiguating a preview from others that share the same display name in the same file (which Xcode’s canvas shows as a “Line N” subtitle).",
+            "description": "The 1-based line number in the source file where the rendered preview is defined. Useful for disambiguating a preview from others that share the same display name in the same file (which Xcode\u2019s canvas shows as a \u201cLine N\u201d subtitle).",
             "type": "integer"
           },
           "supportedCanvasControlOverrides": {
@@ -1538,7 +1538,20 @@
               "groupItems": {
                 "description": "List of supported group items for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. The value of the `index` field of one of these items can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` input structure to choose a group item to render. Omitted if the preview doesn't have a group item control.",
                 "items": {
-                  "type": "integer"
+                  "properties": {
+                    "index": {
+                      "description": "Zero-based index of the group item, which can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` structure of the input structure to render that group item.",
+                      "type": "integer"
+                    },
+                    "title": {
+                      "description": "Optional human-readable title of the group item, derived from a string representation of the preview argument. Might not be unique among the group items.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "index"
+                  ],
+                  "type": "object"
                 },
                 "type": "array"
               },
@@ -1572,7 +1585,9 @@
             "type": "object"
           }
         },
-        "required": [],
+        "required": [
+          "errors"
+        ],
         "type": "object"
       },
       "title": "RenderPreview"
@@ -2140,7 +2155,7 @@
             "type": "array"
           },
           "sourceValues": {
-            "description": "The source language values that you MUST translate into the target locale. Contains the text to translate — do NOT translate the key.",
+            "description": "The source language values that you MUST translate into the target locale. Contains the text to translate \u2014 do NOT translate the key.",
             "properties": {
               "setValues": {
                 "description": "For string sets: the source language values. Each one must be translated. Only set for string sets",
@@ -2218,7 +2233,7 @@
             "type": "string"
           },
           "stringSetTranslation": {
-            "description": "Array of translated values for string sets. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+            "description": "Array of translated values for string sets. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
             "items": {
               "type": "string"
             },
@@ -2229,7 +2244,7 @@
             "type": "string"
           },
           "templateTranslation": {
-            "description": "Translation with template + substitutions for varying a string by plural or for translating a string that is already varied by plural. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+            "description": "Translation with template + substitutions for varying a string by plural or for translating a string that is already varied by plural. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
             "properties": {
               "substitutions": {
                 "description": "Array of substitution definitions",
@@ -2248,7 +2263,7 @@
                       "type": "string"
                     },
                     "variants": {
-                      "description": "Dictionary mapping variation paths to translated values. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+                      "description": "Dictionary mapping variation paths to translated values. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
                       "type": "object"
                     }
                   },
@@ -2263,7 +2278,7 @@
                 "type": "array"
               },
               "template": {
-                "description": "Template string containing substitution references. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+                "description": "Template string containing substitution references. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
                 "type": "string"
               }
             },
@@ -2274,14 +2289,14 @@
             "type": "object"
           },
           "translation": {
-            "description": "Simple string translation for non-varied strings. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“). Refer to the `xcode-integration:translation` skill for details",
+            "description": "Simple string translation for non-varied strings. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c). Refer to the `xcode-integration:translation` skill for details",
             "type": "string"
           },
           "variationTranslation": {
-            "description": "Variation structure for strings with top-level plural, device, or width variations. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+            "description": "Variation structure for strings with top-level plural, device, or width variations. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
             "properties": {
               "substitutions": {
-                "description": "Optional array of substitution definitions for templates that reference substitutions. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+                "description": "Optional array of substitution definitions for templates that reference substitutions. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
                 "items": {
                   "properties": {
                     "argNum": {
@@ -2297,7 +2312,7 @@
                       "type": "string"
                     },
                     "variants": {
-                      "description": "Dictionary mapping variation paths to translated values. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+                      "description": "Dictionary mapping variation paths to translated values. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
                       "type": "object"
                     }
                   },
@@ -2312,7 +2327,7 @@
                 "type": "array"
               },
               "topLevelVariation": {
-                "description": "Dictionary mapping variation paths to template strings or translations. Prefer typographically correct quotes for the target language (e.g., „...“ for German, «...» for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German „...“)",
+                "description": "Dictionary mapping variation paths to template strings or translations. Prefer typographically correct quotes for the target language (e.g., \u201e...\u201c for German, \u00ab...\u00bb for French). All curly quotes must be escaped (e.g., \\u201E...\\u201C for German \u201e...\u201c)",
                 "type": "object"
               }
             },
@@ -2443,7 +2458,7 @@
       "title": "Read String Catalog"
     },
     {
-      "description": "Updates, appends or deletes the additional per-file compiler flags for a single source file in a specific Xcode target — the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources.\n\nNote: Per-file compiler flags should never be used when target build settings would suffice. Only use per-file compiler flags sparingly, when adding a flag to a specific file is absolutely required and is the only way to solve a problem (e.g. incrementally adopting `-fbounds-safety` by applying it to a single file only). Prefer UpdateTargetBuildSetting in any other case.\n\nAlways use this tool to update per-file compiler flags — do not edit project.pbxproj directly.\n\nNote about Swift: Per-file compiler flags on Swift sources are typically ignored by the build system because the unit of compilation for Swift is a module. The value still round-trips through the project, but it may not affect builds. Prefer OTHER_SWIFT_FLAGS at the target level (use UpdateTargetBuildSetting).",
+      "description": "Updates, appends or deletes the additional per-file compiler flags for a single source file in a specific Xcode target \u2014 the same value shown in the Compiler Flags column of Target > Build Phases > Compile Sources.\n\nNote: Per-file compiler flags should never be used when target build settings would suffice. Only use per-file compiler flags sparingly, when adding a flag to a specific file is absolutely required and is the only way to solve a problem (e.g. incrementally adopting `-fbounds-safety` by applying it to a single file only). Prefer UpdateTargetBuildSetting in any other case.\n\nAlways use this tool to update per-file compiler flags \u2014 do not edit project.pbxproj directly.\n\nNote about Swift: Per-file compiler flags on Swift sources are typically ignored by the build system because the unit of compilation for Swift is a module. The value still round-trips through the project, but it may not affect builds. Prefer OTHER_SWIFT_FLAGS at the target level (use UpdateTargetBuildSetting).",
       "inputSchema": {
         "properties": {
           "appendValue": {
@@ -2871,7 +2886,7 @@
                   "type": "string"
                 },
                 "displayTitle": {
-                  "description": "The destination's name as shown in the Xcode picker, including any disambiguation suffix when needed. This is the handle to pass back to XcodeSwitchRunDestination — it always round-trips.",
+                  "description": "The destination's name as shown in the Xcode picker, including any disambiguation suffix when needed. This is the handle to pass back to XcodeSwitchRunDestination \u2014 it always round-trips.",
                   "type": "string"
                 },
                 "group": {
@@ -2924,7 +2939,7 @@
             "type": "array"
           },
           "fullRunDestinationListPath": {
-            "description": "Path to a file containing every destination — including incompatible ones — in grep-friendly format.",
+            "description": "Path to a file containing every destination \u2014 including incompatible ones \u2014 in grep-friendly format.",
             "type": "string"
           },
           "groups": {
@@ -3058,14 +3073,14 @@
       "inputSchema": {
         "properties": {
           "productTypeFilter": {
-            "description": "Optional list of product-type identifiers. When supplied, only targets whose productTypeIdentifier matches one of the entries are returned. Each entry is matched case-insensitively against either the full identifier (e.g. 'com.apple.product-type.application') or its suffix after 'com.apple.product-type.' (e.g. 'application', 'framework', 'framework.static', 'library.static', 'bundle.unit-test', 'bundle.ui-testing', 'app-extension', 'extensionkit-extension'). Aggregate targets — which have no productTypeIdentifier — are excluded by any non-empty filter; pass an empty array or omit the parameter to keep them.",
+            "description": "Optional list of product-type identifiers. When supplied, only targets whose productTypeIdentifier matches one of the entries are returned. Each entry is matched case-insensitively against either the full identifier (e.g. 'com.apple.product-type.application') or its suffix after 'com.apple.product-type.' (e.g. 'application', 'framework', 'framework.static', 'library.static', 'bundle.unit-test', 'bundle.ui-testing', 'app-extension', 'extensionkit-extension'). Aggregate targets \u2014 which have no productTypeIdentifier \u2014 are excluded by any non-empty filter; pass an empty array or omit the parameter to keep them.",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "projectPath": {
-            "description": "Optional project-organization or filesystem path to a specific .xcodeproj container in the workspace (e.g. 'MyApp/MyApp.xcodeproj' or 'MyApp/MyApp'). When supplied, the listing is restricted to targets owned by that project. Both forms — with and without the .xcodeproj suffix — are accepted.",
+            "description": "Optional project-organization or filesystem path to a specific .xcodeproj container in the workspace (e.g. 'MyApp/MyApp.xcodeproj' or 'MyApp/MyApp'). When supplied, the listing is restricted to targets owned by that project. Both forms \u2014 with and without the .xcodeproj suffix \u2014 are accepted.",
             "type": "string"
           },
           "workspaceIdentifier": {
@@ -3088,7 +3103,7 @@
             "type": "string"
           },
           "targets": {
-            "description": "Visible, project-owned targets matching the scope and productTypeFilter, capped at 100 entries. Sorted by containingProjectPath, then by name (alphabetical) — predictable for both inline reading and truncation.",
+            "description": "Visible, project-owned targets matching the scope and productTypeFilter, capped at 100 entries. Sorted by containingProjectPath, then by name (alphabetical) \u2014 predictable for both inline reading and truncation.",
             "items": {
               "properties": {
                 "containingProjectPath": {
@@ -3155,7 +3170,7 @@
       "title": "List Targets"
     },
     {
-      "description": "Lists Xcode templates available in this Xcode install. Use this to discover the templateIdentifier\nand option keys to pass to XcodeNewTarget (kind=\"target\") or XcodeNewProject (kind=\"project\"). The unfiltered listing is large (~200 target templates);\nalways pass at least one filter — typically platformFilter (e.g. [\"ios\"]) and/or categoryFilter\n(e.g. [\"Application\"]). Use nameFilter for a substring search by name. Pass templateIdentifier when\nyou already know the identifier to get back just that one entry. Each TemplateInfo includes the\ntemplate's options (popup / checkbox / text) so the caller can fill them in without a second round\ntrip — EXCEPT when no filter is supplied: in that \"broad browse\" case the inline `options` array\nis empty for each entry to keep the response small. Pass any filter (or templateIdentifier) to get\nthe full option schema. Inline results are capped at 100; the complete list with\nfull options for every template is always written to fullTemplateListPath in grep-friendly format\nwith keys like TEMPLATE_INDEX, TEMPLATE_IDENTIFIER, TEMPLATE_NAME, TEMPLATE_CATEGORY, PLATFORM,\nIS_MULTI_PLATFORM, OPTION_*.\nSupports kind=\"target\" (default) and kind=\"project\". Other kinds return an error listing supported values.",
+      "description": "Lists Xcode templates available in this Xcode install. Use this to discover the templateIdentifier\nand option keys to pass to XcodeNewTarget (kind=\"target\") or XcodeNewProject (kind=\"project\"). The unfiltered listing is large (~200 target templates);\nalways pass at least one filter \u2014 typically platformFilter (e.g. [\"ios\"]) and/or categoryFilter\n(e.g. [\"Application\"]). Use nameFilter for a substring search by name. Pass templateIdentifier when\nyou already know the identifier to get back just that one entry. Each TemplateInfo includes the\ntemplate's options (popup / checkbox / text) so the caller can fill them in without a second round\ntrip \u2014 EXCEPT when no filter is supplied: in that \"broad browse\" case the inline `options` array\nis empty for each entry to keep the response small. Pass any filter (or templateIdentifier) to get\nthe full option schema. Inline results are capped at 100; the complete list with\nfull options for every template is always written to fullTemplateListPath in grep-friendly format\nwith keys like TEMPLATE_INDEX, TEMPLATE_IDENTIFIER, TEMPLATE_NAME, TEMPLATE_CATEGORY, PLATFORM,\nIS_MULTI_PLATFORM, OPTION_*.\nSupports kind=\"target\" (default) and kind=\"project\". Other kinds return an error listing supported values.",
       "inputSchema": {
         "properties": {
           "categoryFilter": {
@@ -3181,7 +3196,7 @@
             "type": "array"
           },
           "templateIdentifier": {
-            "description": "Optional exact identifier match (e.g. 'com.apple.dt.unit.iosFramework'). When supplied, the listing returns only the matching template — useful for retrieving the option schema for a known template.",
+            "description": "Optional exact identifier match (e.g. 'com.apple.dt.unit.iosFramework'). When supplied, the listing returns only the matching template \u2014 useful for retrieving the option schema for a known template.",
             "type": "string"
           }
         },
@@ -3216,7 +3231,7 @@
                   "type": "boolean"
                 },
                 "options": {
-                  "description": "The template's caller-settable options. Pass values via XcodeNewTarget's `options` dict using each option.identifier as the key. Empty when XcodeListTemplates is called with no filter (broad browse mode) — pass any filter (platformFilter, categoryFilter, nameFilter, or templateIdentifier) to drill in and get the full options for the matching templates. The complete options for every template are always included in `fullTemplateListPath`.",
+                  "description": "The template's caller-settable options. Pass values via XcodeNewTarget's `options` dict using each option.identifier as the key. Empty when XcodeListTemplates is called with no filter (broad browse mode) \u2014 pass any filter (platformFilter, categoryFilter, nameFilter, or templateIdentifier) to drill in and get the full options for the matching templates. The complete options for every template are always included in `fullTemplateListPath`.",
                   "items": {
                     "properties": {
                       "defaultValue": {
@@ -3239,7 +3254,7 @@
                         "type": "array"
                       },
                       "type": {
-                        "description": "One of 'popup' (string-enum), 'checkbox' (bool — pass 'true' or 'false' as the value), 'text' (free string), or other less-common types ('combo', 'class', 'static', 'buildSetting').",
+                        "description": "One of 'popup' (string-enum), 'checkbox' (bool \u2014 pass 'true' or 'false' as the value), 'text' (free string), or other less-common types ('combo', 'class', 'static', 'buildSetting').",
                         "type": "string"
                       }
                     },
@@ -3343,7 +3358,7 @@
                   "type": "boolean"
                 },
                 "name": {
-                  "description": "The test plan's name, as it appears in the Xcode test plan picker. Pass this value to XcodeSwitchTestPlan (unless the name is ambiguous — see `path`).",
+                  "description": "The test plan's name, as it appears in the Xcode test plan picker. Pass this value to XcodeSwitchTestPlan (unless the name is ambiguous \u2014 see `path`).",
                   "type": "string"
                 },
                 "path": {
@@ -3577,15 +3592,15 @@
       "title": "New Project"
     },
     {
-      "description": "Adds a new target to a project in the current Xcode workspace using a target template. Discover\nvalid templateIdentifier values (and the option schema for each) with XcodeListTemplates.\n\nRequired: templateIdentifier (e.g. 'com.apple.dt.unit.iosFramework') and productName (the new\ntarget's product name, e.g. 'MyFeature'). productName must be unique within the destination\nproject — duplicates are rejected up front. Note that some templates derive a target name\nfrom productName (e.g. Widget Extension appends 'Extension'); the actual final name is\nreturned in `targetName`.\n\norganizationIdentifier overrides the workspace default for the bundle identifier prefix. When\nembedInAppNamed is set and organizationIdentifier is left unset, the prefix auto-derives from\nthe host app's evaluated PRODUCT_BUNDLE_IDENTIFIER so the embedded target's bundle id is\nprefixed by the host's (Xcode's `<host>.<extension>` code-signing rule).\n\nTemplate-specific options go in `options`: each key is an IDETemplateOption.identifier from\nXcodeListTemplates (e.g. 'languageChoice', 'coreData', 'testingSystem'); pass values as strings.\nCheckbox options accept 'true'/'false' (also 'YES'/'NO' or '1'/'0', case-insensitive).\nPopup options must use one of the strings from the OptionInfo.possibleValues list returned by\nXcodeListTemplates. Unknown keys and invalid values are rejected with a list of valid keys/values.\n\nprojectPath selects which .xcodeproj in the workspace owns the new target — required only\nwhen the workspace contains more than one project and `embedInAppNamed` doesn't\ndisambiguate; resolution rules match XcodeListTargets.\n\nembedInAppNamed embeds the new target in an existing app target (useful for app extensions,\nwidgets, intents). The named target must already exist and be an application.\n\nSide effect to be aware of: If \"Autocreate schemes\" is enabled for the workspace then a scheme may be created for the new\ntarget and switched to as the active scheme. The post-instantiation active scheme name is\nreturned in `activeSchemeName`.",
+      "description": "Adds a new target to a project in the current Xcode workspace using a target template. Discover\nvalid templateIdentifier values (and the option schema for each) with XcodeListTemplates.\n\nRequired: templateIdentifier (e.g. 'com.apple.dt.unit.iosFramework') and productName (the new\ntarget's product name, e.g. 'MyFeature'). productName must be unique within the destination\nproject \u2014 duplicates are rejected up front. Note that some templates derive a target name\nfrom productName (e.g. Widget Extension appends 'Extension'); the actual final name is\nreturned in `targetName`.\n\norganizationIdentifier overrides the workspace default for the bundle identifier prefix. When\nembedInAppNamed is set and organizationIdentifier is left unset, the prefix auto-derives from\nthe host app's evaluated PRODUCT_BUNDLE_IDENTIFIER so the embedded target's bundle id is\nprefixed by the host's (Xcode's `<host>.<extension>` code-signing rule).\n\nTemplate-specific options go in `options`: each key is an IDETemplateOption.identifier from\nXcodeListTemplates (e.g. 'languageChoice', 'coreData', 'testingSystem'); pass values as strings.\nCheckbox options accept 'true'/'false' (also 'YES'/'NO' or '1'/'0', case-insensitive).\nPopup options must use one of the strings from the OptionInfo.possibleValues list returned by\nXcodeListTemplates. Unknown keys and invalid values are rejected with a list of valid keys/values.\n\nprojectPath selects which .xcodeproj in the workspace owns the new target \u2014 required only\nwhen the workspace contains more than one project and `embedInAppNamed` doesn't\ndisambiguate; resolution rules match XcodeListTargets.\n\nembedInAppNamed embeds the new target in an existing app target (useful for app extensions,\nwidgets, intents). The named target must already exist and be an application.\n\nSide effect to be aware of: If \"Autocreate schemes\" is enabled for the workspace then a scheme may be created for the new\ntarget and switched to as the active scheme. The post-instantiation active scheme name is\nreturned in `activeSchemeName`.",
       "inputSchema": {
         "properties": {
           "embedInAppNamed": {
-            "description": "Optional name of an existing application target to embed the new target into (relevant for app extensions, widgets, intents, etc.). MUST live in the same project as the new target — cross-project embedding is rejected. In a multi-project workspace, if `projectPath` is omitted and exactly one application target in the workspace has this name, that target's project is used as the destination automatically.",
+            "description": "Optional name of an existing application target to embed the new target into (relevant for app extensions, widgets, intents, etc.). MUST live in the same project as the new target \u2014 cross-project embedding is rejected. In a multi-project workspace, if `projectPath` is omitted and exactly one application target in the workspace has this name, that target's project is used as the destination automatically.",
             "type": "string"
           },
           "options": {
-            "description": "Optional dictionary of template-specific options. Keys are IDETemplateOption identifiers from XcodeListTemplates (e.g. 'languageChoice', 'testingSystem', 'coreData'). All values are strings. Checkbox options accept 'true'/'false', 'YES'/'NO', or '1'/'0' (case-insensitive) — normalized for you. Popup options must be one of OptionInfo.possibleValues. Unknown keys are rejected with a list of valid keys. Reserved: do NOT include `productName`, `organizationIdentifier`, or `bundleIdentifierPrefix` here — they're set via the dedicated top-level parameters and a duplicate in `options` is rejected.",
+            "description": "Optional dictionary of template-specific options. Keys are IDETemplateOption identifiers from XcodeListTemplates (e.g. 'languageChoice', 'testingSystem', 'coreData'). All values are strings. Checkbox options accept 'true'/'false', 'YES'/'NO', or '1'/'0' (case-insensitive) \u2014 normalized for you. Popup options must be one of OptionInfo.possibleValues. Unknown keys are rejected with a list of valid keys. Reserved: do NOT include `productName`, `organizationIdentifier`, or `bundleIdentifierPrefix` here \u2014 they're set via the dedicated top-level parameters and a duplicate in `options` is rejected.",
             "type": "object"
           },
           "organizationIdentifier": {
@@ -3593,11 +3608,11 @@
             "type": "string"
           },
           "productName": {
-            "description": "The new target's product name (PRODUCT_NAME), e.g. 'MyFeature'. Must be non-empty. Most templates also use this as the target name verbatim, but some derive a different name (e.g. the Widget Extension template appends 'Extension', producing target 'MyFeatureExtension'). Check the `targetName` returned in the output for the actual final name — that's the value to pass to GetTargetBuildSettings, etc.",
+            "description": "The new target's product name (PRODUCT_NAME), e.g. 'MyFeature'. Must be non-empty. Most templates also use this as the target name verbatim, but some derive a different name (e.g. the Widget Extension template appends 'Extension', producing target 'MyFeatureExtension'). Check the `targetName` returned in the output for the actual final name \u2014 that's the value to pass to GetTargetBuildSettings, etc.",
             "type": "string"
           },
           "projectPath": {
-            "description": "Optional project-organization or filesystem path to the .xcodeproj that should own the new target (e.g. 'MyApp/MyApp.xcodeproj'). Required only when the workspace contains more than one project and `embedInAppNamed` doesn't disambiguate. Both forms — with and without the .xcodeproj suffix — are accepted.",
+            "description": "Optional project-organization or filesystem path to the .xcodeproj that should own the new target (e.g. 'MyApp/MyApp.xcodeproj'). Required only when the workspace contains more than one project and `embedInAppNamed` doesn't disambiguate. Both forms \u2014 with and without the .xcodeproj suffix \u2014 are accepted.",
             "type": "string"
           },
           "templateIdentifier": {
@@ -3869,11 +3884,11 @@
       "title": "XcodeRefreshCodeIssuesInFile"
     },
     {
-      "description": "Changes the active run destination for the currently active scheme. The active scheme is left unchanged. Pass the destination's `displayTitle` (the disambiguated label shown in the Xcode picker). Valid sources: any `displayTitle` field returned by XcodeListRunDestinations, the list tool's `activeDestinationDisplayTitle` field, this tool's own `activeDestinationDisplayTitle` from a prior call, or XcodeSwitchScheme's `activeDestinationDisplayTitle` field — outputs from any of these chain back into this parameter without re-listing. Refuses to switch to a destination that is not eligible for the active scheme and reports the framework's reason. The output reflects Xcode's post-switch state.",
+      "description": "Changes the active run destination for the currently active scheme. The active scheme is left unchanged. Pass the destination's `displayTitle` (the disambiguated label shown in the Xcode picker). Valid sources: any `displayTitle` field returned by XcodeListRunDestinations, the list tool's `activeDestinationDisplayTitle` field, this tool's own `activeDestinationDisplayTitle` from a prior call, or XcodeSwitchScheme's `activeDestinationDisplayTitle` field \u2014 outputs from any of these chain back into this parameter without re-listing. Refuses to switch to a destination that is not eligible for the active scheme and reports the framework's reason. The output reflects Xcode's post-switch state.",
       "inputSchema": {
         "properties": {
           "displayTitle": {
-            "description": "The destination's `displayTitle` — the disambiguated label shown in the Xcode picker. Round-trips through any of these prior tool outputs without needing a fresh XcodeListRunDestinations call: this tool's own `activeDestinationDisplayTitle`, XcodeSwitchScheme's `activeDestinationDisplayTitle`, or any `displayTitle` / `activeDestinationDisplayTitle` from XcodeListRunDestinations.",
+            "description": "The destination's `displayTitle` \u2014 the disambiguated label shown in the Xcode picker. Round-trips through any of these prior tool outputs without needing a fresh XcodeListRunDestinations call: this tool's own `activeDestinationDisplayTitle`, XcodeSwitchScheme's `activeDestinationDisplayTitle`, or any `displayTitle` / `activeDestinationDisplayTitle` from XcodeListRunDestinations.",
             "type": "string"
           },
           "workspaceIdentifier": {
@@ -3912,7 +3927,7 @@
       "title": "Switch Run Destination"
     },
     {
-      "description": "Changes the active scheme in the current Xcode workspace to the specified scheme.\nAccepts either a scheme's name or its disambiguated name (needed when multiple schemes share the same name).\nUse the XcodeListSchemes tool to discover available scheme names.\nThe active run destination may be adjusted automatically when the previous one isn't compatible with the newly selected scheme — and Xcode may pick a different *variant* (for example, switching from \"My Mac\" to \"My Mac (Mac Catalyst)\") even when the destination's display name appears similar. The response's `activeDestinationDisplayTitle` matches what XcodeListRunDestinations returns, so callers can detect such auto-resolutions without a follow-up list call.",
+      "description": "Changes the active scheme in the current Xcode workspace to the specified scheme.\nAccepts either a scheme's name or its disambiguated name (needed when multiple schemes share the same name).\nUse the XcodeListSchemes tool to discover available scheme names.\nThe active run destination may be adjusted automatically when the previous one isn't compatible with the newly selected scheme \u2014 and Xcode may pick a different *variant* (for example, switching from \"My Mac\" to \"My Mac (Mac Catalyst)\") even when the destination's display name appears similar. The response's `activeDestinationDisplayTitle` matches what XcodeListRunDestinations returns, so callers can detect such auto-resolutions without a follow-up list call.",
       "inputSchema": {
         "properties": {
           "schemeName": {
@@ -3933,7 +3948,7 @@
       "outputSchema": {
         "properties": {
           "activeDestinationDisplayTitle": {
-            "description": "The disambiguated displayTitle of the active run destination — the same string XcodeListRunDestinations returns. Use this to detect when Xcode auto-resolved the destination to a different variant (e.g. from 'My Mac' to 'My Mac (Mac Catalyst)') because the previous destination wasn't compatible with the new scheme.",
+            "description": "The disambiguated displayTitle of the active run destination \u2014 the same string XcodeListRunDestinations returns. Use this to detect when Xcode auto-resolved the destination to a different variant (e.g. from 'My Mac' to 'My Mac (Mac Catalyst)') because the previous destination wasn't compatible with the new scheme.",
             "type": "string"
           },
           "activeSchemeName": {

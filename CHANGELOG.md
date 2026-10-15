@@ -36,7 +36,10 @@ Everything below compares **Xcode 27** against the previous release, **Xcode 26.
 
 ## Xcode 27.2 beta
 
-The main documentation reflects Xcode 27; this section lists what **Xcode 27.2 beta** (27B5019j, server 25434.2; 27 is 25317) changes on top of it. Captured from the headless server's `tools/list`: [tools-headless-27.2.json](tools-headless-27.2.json). The windowed server wasn't captured.
+The main documentation reflects Xcode 27; this section lists what **Xcode 27.2 beta 2** (27B5028f, server 25447.1; beta 1 is 27B5019j/25434.2, 27 is 25317) changes on top of it. Captured from `tools/list` of both servers: [tools-27.2.json](tools-27.2.json) (windowed) and [tools-headless-27.2.json](tools-headless-27.2.json) (headless). Both change identically; the windowed/headless split is unchanged from 27.
 
 - No tools added or removed
 - [`RenderPreview`](docs/tools.md#renderpreview): new `preferredRenderDestination` parameter — pick the device or simulator to render on by `identifier`, `platformName`, `deviceModelName`, and/or `systemVersion`; falls back to the automatic destination with a message in `errors` when nothing matches. Output adds `availableRenderDestinations` (destinations for the active scheme), and `renderedDestination` gains a required `identifier`
+- [`RenderPreview`](docs/tools.md#renderpreview) *(beta 2)*: `supportedCanvasControlOverrides.groupItems` entries are now objects `{index, title?}` instead of plain integers — `title` is derived from the `#Preview(arguments:)` value and may not be unique; pass `index` as `groupItemIndex`. `errors` is now always present in the output
+- [`InvokeDebuggerCommand`](docs/tools.md#invokedebuggercommand) *(beta 2)*: description now steers toward `p`/`v` over `po`/`expression` to avoid unnecessary expression evaluation; schema unchanged
+- `GetCodeCoverage` is announced in the beta 2 release notes (181141715) but isn't in 27B5028f — absent from `tools/list` of both servers and from the `IDEIntelligenceChat` binary that defines the tools

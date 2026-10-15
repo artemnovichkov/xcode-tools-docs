@@ -744,7 +744,7 @@ StopProject(tabIdentifier: "...")
 
 Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. The result identifies which preview was rendered via `displayName` and `sourceLineNumber`, matching the title and "Line N" subtitle in Xcode's canvas, and reports the actual `renderedDestination` (platform, device model, OS version), which may differ from the workspace's selected run destination. In the snapshot at `previewSnapshotPath`, areas of the framebuffer that fall outside the render destination's device screen are transparent.
 
-> **Xcode 27.2 beta:** the render destination can be picked. The result lists `availableRenderDestinations` for the active scheme, and `renderedDestination` gains a required `identifier`; pass one back in `preferredRenderDestination`. See [Xcode 27.2 beta](../CHANGELOG.md#xcode-272-beta).
+> **Xcode 27.2 beta:** the render destination can be picked. The result lists `availableRenderDestinations` for the active scheme, and `renderedDestination` gains a required `identifier`; pass one back in `preferredRenderDestination`. Beta 2 turns `supportedCanvasControlOverrides.groupItems` into `{index, title?}` objects and makes `errors` always present. See [Xcode 27.2 beta](../CHANGELOG.md#xcode-272-beta).
 
 The override parameters are discovery-driven: call the tool once, read `supportedLocalizations`, `supportedPreviewVariantOverrides`, and `supportedCanvasControlOverrides` from the result, then pass values from those back in.
 
@@ -799,7 +799,7 @@ Sends an lldb command to Xcode's active debugging session and returns the output
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `tabIdentifier` | string | No | Workspace tab identifier |
-| `command` | string | Yes | lldb command (e.g. `bt`, `po self`, `breakpoint set -n viewDidLoad`, `continue`, `thread step-over`, `frame variable`) |
+| `command` | string | Yes | lldb command (e.g. `bt`, `po self`, `breakpoint set -n viewDidLoad`, `continue`, `thread step-over`, `frame variable`). *Xcode 27.2 beta:* prefer `p`/`v` over `po`/`expression` |
 | `timeout` | integer | No | Max seconds to wait. Default: `30` (increase for commands that resume execution, like `continue`) |
 
 **Example:**
