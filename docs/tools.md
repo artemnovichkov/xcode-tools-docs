@@ -374,6 +374,7 @@ Creates directories and groups in the Xcode project navigator.
 |-----------|------|----------|-------------|
 | `tabIdentifier` | string | No | Workspace tab identifier |
 | `directoryPath` | string | Yes | Project-relative path for the new directory |
+| `directoryKind` | string | No | *Xcode 27.2.* `folder` (default) creates a file system synchronized (buildable) folder; `group` creates a classic group backed by a directory. Falls back to what the parent supports |
 
 **Example:**
 ```
@@ -603,10 +604,10 @@ Adds or updates an Info.plist key — privacy usage descriptions, App Transport 
 | `tabIdentifier` | string | No | Workspace tab identifier |
 | `targetName` | string | Yes | Target to add the key to |
 | `infoPlistKey` | string | Yes | Info.plist key (e.g., `NSCameraUsageDescription`) |
-| `infoPlistValueType` | string | Yes | `bool`, `string`, `int`, `stringArray`, or `dictionaryArray` |
+| `infoPlistValueType` | string | Yes | `bool`, `string`, `int`, `stringArray`, or `dictionaryArray`; *Xcode 27.2:* also `dictionary` |
 | `infoPlistValue` | string | No | Value for `bool`/`string`/`int` types (`"true"`/`"false"` for bool) |
 | `infoPlistValueItems` | string[] | No | Values for `stringArray` type |
-| `infoPlistDictionaryItems` | string | No | JSON-encoded array of dictionaries for `dictionaryArray` type |
+| `infoPlistDictionaryItems` | string | No | JSON-encoded array of dictionaries for `dictionaryArray` type, or a JSON-encoded dictionary for `dictionary` (*Xcode 27.2*) |
 | `projectPath` | string | No | Path to the owning `.xcodeproj`; only needed when the target name is ambiguous |
 
 **Example:**
@@ -744,7 +745,7 @@ StopProject(tabIdentifier: "...")
 
 Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. The result identifies which preview was rendered via `displayName` and `sourceLineNumber`, matching the title and "Line N" subtitle in Xcode's canvas, and reports the actual `renderedDestination` (platform, device model, OS version), which may differ from the workspace's selected run destination. In the snapshot at `previewSnapshotPath`, areas of the framebuffer that fall outside the render destination's device screen are transparent.
 
-> **Xcode 27.2 beta:** the render destination can be picked. The result lists `availableRenderDestinations` for the active scheme, and `renderedDestination` gains a required `identifier`; pass one back in `preferredRenderDestination`. Beta 2 turns `supportedCanvasControlOverrides.groupItems` into `{index, title?}` objects and makes `errors` always present. See [Xcode 27.2 beta](../CHANGELOG.md#xcode-272-beta).
+> **Xcode 27.2 RC:** the output is reorganized. The discovery fields move into one `supportedOverrides` object: `localizations`, `previewVariants`, `canvasControls`, `renderDestinations`, and the new `displayModes`. The snapshot path moves from `previewSnapshotPath` to `snapshot.path`. The render destination can be picked: pass an `identifier` from `supportedOverrides.renderDestinations` in `preferredRenderDestination`; `renderedDestination` gains a required `identifier`. `displayMode: "interactive"` renders the preview live and snapshots it after `snapshotDelay` seconds. `canvasControls.groupItems` entries are `{index, title?}` objects, and `errors` is always present. See [Xcode 27.2 RC](../CHANGELOG.md#xcode-272-rc).
 
 The override parameters are discovery-driven: call the tool once, read `supportedLocalizations`, `supportedPreviewVariantOverrides`, and `supportedCanvasControlOverrides` from the result, then pass values from those back in.
 
@@ -755,8 +756,10 @@ The override parameters are discovery-driven: call the tool once, read `supporte
 | `previewDefinitionIndexInFile` | integer | No | Zero-based index of the `#Preview` macro or `PreviewProvider` in the file. Default: `0` |
 | `previewCanvasControlOverrides` | object | No | Canvas controls to override: `timelineIndex` (timeline position for Widgets/Live Activities), `toggleState` (boolean toggle control), `groupItemIndex` (which item of a `#Preview(arguments:)` set). Only meaningful for the controls listed in `supportedCanvasControlOverrides` |
 | `previewLocalizationOverride` | string | No | Locale identifier to preview in (e.g. `"fr"`, `"ja"`), from `supportedLocalizations`. Don't call the tool in parallel when this is set |
-| `preferredRenderDestination` | object | No | *Xcode 27.2 beta.* Destination to render on, matched by any of `identifier`, `platformName`, `deviceModelName`, `systemVersion` (values from `availableRenderDestinations`). Unset fields aren't constrained; first match wins. No match → automatic destination plus a message in `errors` |
+| `preferredRenderDestination` | object | No | *Xcode 27.2.* Destination to render on, matched by any of `identifier`, `platformName`, `deviceModelName`, `systemVersion` (values from `supportedOverrides.renderDestinations`). Unset fields aren't constrained; first match wins. No match → automatic destination plus a message in `errors` |
 | `previewVariantOverrides` | object | No | Variant group name → variant name, from `supportedPreviewVariantOverrides` (e.g. color scheme, dynamic type) |
+| `displayMode` | string | No | *Xcode 27.2.* `static` (default) or `interactive`, from `supportedOverrides.displayModes` |
+| `snapshotDelay` | integer | No | *Xcode 27.2.* Seconds an interactive preview runs before the snapshot. Must be ≥ 0 and less than `timeout` |
 | `timeout` | integer | No | Max wait time in seconds. Default: 120 |
 
 **Example:**
@@ -799,7 +802,7 @@ Sends an lldb command to Xcode's active debugging session and returns the output
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `tabIdentifier` | string | No | Workspace tab identifier |
-| `command` | string | Yes | lldb command (e.g. `bt`, `po self`, `breakpoint set -n viewDidLoad`, `continue`, `thread step-over`, `frame variable`). *Xcode 27.2 beta:* prefer `p`/`v` over `po`/`expression` |
+| `command` | string | Yes | lldb command (e.g. `bt`, `po self`, `breakpoint set -n viewDidLoad`, `continue`, `thread step-over`, `frame variable`). *Xcode 27.2:* prefer `p`/`v` over `po`/`expression` |
 | `timeout` | integer | No | Max seconds to wait. Default: `30` (increase for commands that resume execution, like `continue`) |
 
 **Example:**

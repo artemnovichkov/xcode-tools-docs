@@ -74,11 +74,11 @@
       "title": "Add Entitlement"
     },
     {
-      "description": "Add or update an Info.plist key in the project.\n\nUse this tool for app configuration metadata such as:\n- Privacy usage descriptions (e.g. NSCameraUsageDescription, NSLocationWhenInUseUsageDescription)\n- App Transport Security settings\n- Supported interface orientations\n- URL schemes and document types\n- Background modes\n- Bundle display name, version, or other app metadata\n\nThis is NOT for entitlements. If you need a restricted system capability\ngated by code signing (like Push Notifications, App Groups, or iCloud),\nuse the AddEntitlement tool instead.\n\nParameters:\n- targetName: The name of the Xcode target to add the Info.plist key to. Use another tool to discover the target names if you don't already know them.\n- infoPlistKey: The key for the info.plist value you want to add.\n- infoPlistValueType: The type of the value \u2014 'bool', 'string', 'int', 'stringArray', or 'dictionaryArray'.\n- infoPlistValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n- infoPlistValueItems: Array of strings (only for stringArray type).\n- infoPlistDictionaryItems: JSON-encoded array of dictionaries (only for dictionaryArray type).\n\nIMPORTANT: Do NOT modify the Info.plist file directly. Always use this tool\nto add or edit Info.plist keys, even if the project has GENERATE_INFOPLIST_FILE enabled.",
+      "description": "Add or update an Info.plist key in the project.\n\nUse this tool for app configuration metadata such as:\n- Privacy usage descriptions (e.g. NSCameraUsageDescription, NSLocationWhenInUseUsageDescription)\n- App Transport Security settings\n- Supported interface orientations\n- URL schemes and document types\n- Background modes\n- Bundle display name, version, or other app metadata\n\nThis is NOT for entitlements. If you need a restricted system capability\ngated by code signing (like Push Notifications, App Groups, or iCloud),\nuse the AddEntitlement tool instead.\n\nParameters:\n- targetName: The name of the Xcode target to add the Info.plist key to. Use another tool to discover the target names if you don't already know them.\n- infoPlistKey: The key for the info.plist value you want to add.\n- infoPlistValueType: The type of the value \u2014 'bool', 'string', 'int', 'stringArray', 'dictionary', or 'dictionaryArray'.\n- infoPlistValue: The value as a string (for bool, string, or int types). For bool, pass 'true' or 'false'.\n- infoPlistValueItems: Array of strings (only for stringArray type).\n- infoPlistDictionaryItems: JSON-encoded dictionary (for dictionary type) or JSON-encoded array of dictionaries (for dictionaryArray type).\n\nIMPORTANT: Do NOT modify the Info.plist file directly. Always use this tool\nto add or edit Info.plist keys, even if the project has GENERATE_INFOPLIST_FILE enabled.",
       "inputSchema": {
         "properties": {
           "infoPlistDictionaryItems": {
-            "description": "A JSON-encoded string representing an array of dictionaries. Required when infoPlistValueType is 'dictionaryArray'. Example: '[{\"NSAllowsArbitraryLoads\": true}]'",
+            "description": "A JSON-encoded string representing either a dictionary or an array of dictionaries. Required when infoPlistValueType is 'dictionary' or `dictionaryArray`. Example dictionary: '{\"NSAllowsArbitraryLoads\": true}'. When infoPlistValueType is 'dictionaryArray', this is instead a JSON-encoded array of dictionaries, e.g. '[{\"NSAllowsArbitraryLoads\": true}]'.",
             "type": "string"
           },
           "infoPlistKey": {
@@ -86,7 +86,7 @@
             "type": "string"
           },
           "infoPlistValue": {
-            "description": "The value as a string. Required when infoPlistValueType is 'bool', 'string', or 'int'. For bool, pass 'true' or 'false'. For int, pass the number as a string. Not used for stringArray or dictionaryArray types.",
+            "description": "The value as a string. Required when infoPlistValueType is 'bool', 'string', or 'int'. For bool, pass 'true' or 'false'. For int, pass the number as a string. Not used for stringArray, dictionary, or dictionaryArray types.",
             "type": "string"
           },
           "infoPlistValueItems": {
@@ -97,12 +97,13 @@
             "type": "array"
           },
           "infoPlistValueType": {
-            "description": "The type of the Info.plist value. Common types are 'string' (for privacy descriptions, display names) and 'bool' (for boolean flags). Use 'stringArray' for lists and 'dictionaryArray' for complex structures like App Transport Security settings.",
+            "description": "The type of the Info.plist value. Common types are 'string' (for privacy descriptions, display names) and 'bool' (for boolean flags). Use 'stringArray' for lists, 'dictionary' for a single complex structure like App Transport Security settings, and 'dictionaryArray' for a list of such structures.",
             "enum": [
               "bool",
               "string",
               "int",
               "stringArray",
+              "dictionary",
               "dictionaryArray"
             ],
             "type": "string"
@@ -456,6 +457,74 @@
         "type": "object"
       },
       "title": "Perform single device interaction and fetch device state"
+    },
+    {
+      "description": "Searches Apple Developer Documentation using semantic matching.",
+      "inputSchema": {
+        "properties": {
+          "frameworks": {
+            "description": "Framework(s) to search in. Searches all frameworks if not specified.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "query": {
+            "description": "The search query",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "DocumentationSearch",
+      "outputSchema": {
+        "properties": {
+          "documents": {
+            "description": "The documents most relevant to the search query",
+            "items": {
+              "properties": {
+                "contents": {
+                  "description": "The document contents",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "The kind of document",
+                  "type": "string"
+                },
+                "score": {
+                  "description": "The matching score of the document",
+                  "type": "number"
+                },
+                "title": {
+                  "description": "The document title",
+                  "type": "string"
+                },
+                "uri": {
+                  "description": "The document uri",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "uri",
+                "contents",
+                "score",
+                "kind"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "documents"
+        ],
+        "type": "object"
+      },
+      "title": "DocumentationSearch"
     },
     {
       "description": "Gets the log of the current or most recently finished build. You can choose which build log entries to include by specifying the severity of any issues emitted by the build task represented by the entry. You can also filter by message regex pattern or file glob pattern. The response also indicates whether the build is currently in progress.",
@@ -1376,8 +1445,12 @@
       "description": "Builds and renders a Preview and waits until a snapshot of the resulting UI is available.",
       "inputSchema": {
         "properties": {
+          "displayMode": {
+            "description": "How to render the preview before capturing a snapshot. Pass one of the values returned in the `displayModes` field of `supportedOverrides` by a previous invocation of this tool for the same active scheme and run destination. \"static\" captures a static snapshot (the default). \"interactive\" renders the preview interactively and then captures a snapshot, optionally after `snapshotDelay` seconds.",
+            "type": "string"
+          },
           "preferredRenderDestination": {
-            "description": "The render destination (device or simulator) to render the preview on, described by any combination of its `identifier`, `platformName`, `deviceModelName`, and `systemVersion`. Use values that were returned in one of the `availableRenderDestinations` entries by a previous invocation of this tool for the same active scheme. Any field left unset is not constrained, and the first available destination matching all specified fields is used. If omitted, the destination is chosen automatically (typically derived from the workspace\u2019s currently-selected run destination). If no available destination matches the specified fields, the preview is rendered on the automatically-chosen destination instead and a message is added to the `errors` field.",
+            "description": "The render destination (device or simulator) to render the preview on, described by any combination of its `identifier`, `platformName`, `deviceModelName`, and `systemVersion`. Use values that were returned in one of the `renderDestinations` entries of `supportedOverrides` by a previous invocation of this tool for the same active scheme. Any field left unset is not constrained, and the first available destination matching all specified fields is used. If omitted, the destination is chosen automatically (typically derived from the workspace\u2019s currently-selected run destination). If no available destination matches the specified fields, the preview is rendered on the automatically-chosen destination instead and a message is added to the `errors` field.",
             "properties": {
               "deviceModelName": {
                 "description": "Display name of the device model of the render destination (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d).",
@@ -1400,18 +1473,18 @@
             "type": "object"
           },
           "previewCanvasControlOverrides": {
-            "description": "Optional overrides for the canvas controls, only applicable to preview types that support each kind of canvas control. Use the `supportedCanvasControlOverrides` field of the output of a previous invocation of this tool to get the available canvas control overrides and their supported values.",
+            "description": "Optional overrides for the canvas controls, only applicable to preview types that support each kind of canvas control. Use the `canvasControls` field of `supportedOverrides` in the output of a previous invocation of this tool to get the available canvas control overrides and their supported values.",
             "properties": {
               "groupItemIndex": {
-                "description": "A zero-based group item index to render for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. This parameter is only meaningful for previews that return a list of items in the `groupItemIndexes` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no index is provided and if the preview has a group item control, then a preview of the first group item is rendered. This parameter is ignored for previews that don't have an `arguments:` parameter.",
+                "description": "A zero-based group item index to render for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. This parameter is only meaningful for previews that return a list of items in the `groupItemIndexes` field of `canvasControls` (within `supportedOverrides`) of the same invocation of this tool for the same active scheme and run destination. If no index is provided and if the preview has a group item control, then a preview of the first group item is rendered. This parameter is ignored for previews that don't have an `arguments:` parameter.",
                 "type": "integer"
               },
               "timelineIndex": {
-                "description": "A zero-based timestop index to render for previews that vary across a timeline, such as a Widget or a Live Activity. This index represents a sequence number rather than a specific clock time. This parameter is only meaningful for previews that return a list of indexes in the `timelineIndexes` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no index is provided, the first preview in the timeline is rendered. This parameter is ignored for previews that don't have a timeline. ",
+                "description": "A zero-based timestop index to render for previews that vary across a timeline, such as a Widget or a Live Activity. This index represents a sequence number rather than a specific clock time. This parameter is only meaningful for previews that return a list of indexes in the `timelineIndexes` field of `canvasControls` (within `supportedOverrides`) of the same invocation of this tool for the same active scheme and run destination. If no index is provided, the first preview in the timeline is rendered. This parameter is ignored for previews that don't have a timeline. ",
                 "type": "integer"
               },
               "toggleState": {
-                "description": "The boolean state of a toggle control for previews that have one, such as a Live Activity. This parameter is only meaningful for previews that return a toggle state in the `toggleState` field of `supportedCanvasControlOverrides` of the same invocation of this tool for the same active scheme and run destination. If no state is provided, the first state in the toggle state list is rendered. This parameter is ignored for previews that don't have a toggle control.",
+                "description": "The boolean state of a toggle control for previews that have one, such as a Live Activity. This parameter is only meaningful for previews that return a toggle state in the `toggleState` field of `canvasControls` (within `supportedOverrides`) of the same invocation of this tool for the same active scheme and run destination. If no state is provided, the first state in the toggle state list is rendered. This parameter is ignored for previews that don't have a toggle control.",
                 "type": "boolean"
               }
             },
@@ -1423,12 +1496,16 @@
             "type": "integer"
           },
           "previewLocalizationOverride": {
-            "description": "A locale identifier to preview in (e.g. \"fr\", \"ja\"). Use a value that was returned in the `supportedLocalizations` field by a previous invocation of this tool.",
+            "description": "A locale identifier to preview in (e.g. \"fr\", \"ja\"). Use a value that was returned in the `localizations` field of `supportedOverrides` by a previous invocation of this tool. Do not call this tool in parallel with other invocations when this parameter is provided.",
             "type": "string"
           },
           "previewVariantOverrides": {
-            "description": "A dictionary mapping variant group names to variant names for any preview variants that should be overridden. Use keys and values that were returned in the `supportedPreviewVariantOverrides` field by a previous invocation of this tool for the same active scheme and run destination.",
+            "description": "A dictionary mapping variant group names to variant names for any preview variants that should be overridden. Use keys and values that were returned in the `previewVariants` field of `supportedOverrides` by a previous invocation of this tool for the same active scheme and run destination.",
             "type": "object"
+          },
+          "snapshotDelay": {
+            "description": "The time in seconds to let an interactive preview run before capturing its snapshot. Only applies when `displayMode` is \"interactive\"; ignored for static previews. Must be at least 0 and less than `timeout`, since the delay elapses within the overall timeout budget; otherwise the invocation fails.",
+            "type": "integer"
           },
           "sourceFilePath": {
             "description": "The path to the file within the Xcode project organization (e.g., 'ProjectName/Sources/MyFile.swift')",
@@ -1451,34 +1528,6 @@
       "name": "RenderPreview",
       "outputSchema": {
         "properties": {
-          "availableRenderDestinations": {
-            "description": "The render destinations that are available for rendering this preview, given the currently active scheme. The `identifier` of any of these entries can be passed in the `identifier` field of the `preferredRenderDestination` input field of a subsequent invocation to render the preview on that specific destination. Omitted if the available destinations could not be determined.",
-            "items": {
-              "properties": {
-                "deviceModelName": {
-                  "description": "Display name of the device model of the render destination (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d). Omitted if not known.",
-                  "type": "string"
-                },
-                "identifier": {
-                  "description": "Opaque, stable identifier for this render destination. Pass this exact value back in the `identifier` field of the `preferredRenderDestination` input field of a subsequent invocation to render the preview on this destination.",
-                  "type": "string"
-                },
-                "platformName": {
-                  "description": "Display name of the platform of the render destination (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d). Omitted if not known.",
-                  "type": "string"
-                },
-                "systemVersion": {
-                  "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. \u201c17.2\u201d). Omitted if not known.",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "identifier"
-              ],
-              "type": "object"
-            },
-            "type": "array"
-          },
           "displayName": {
             "description": "The display name of the rendered preview, matching the title shown for it in Xcode\u2019s canvas tab. For a named `#Preview(\"Some Name\")` this is the given name; for an unnamed `#Preview` it is derived from the file name; for a `PreviewProvider` it is derived from the type name.",
             "type": "string"
@@ -1498,10 +1547,6 @@
               "type": "object"
             },
             "type": "array"
-          },
-          "previewSnapshotPath": {
-            "description": "The path to the image snapshot of the requested preview.  Areas of the framebuffer that are not visible on the screen of the render destination device model are transparent.",
-            "type": "string"
           },
           "renderedDestination": {
             "description": "Describes the render destination that the preview was rendered on. May differ from the workspace's currently-selected run destination if the pipeline picked a different one for this preview. Omitted if the render destination could not be determined.",
@@ -1528,60 +1573,115 @@
             ],
             "type": "object"
           },
+          "snapshot": {
+            "description": "The image snapshot of the requested preview.",
+            "properties": {
+              "path": {
+                "description": "The path to the image snapshot of the requested preview.  Areas of the framebuffer that are not visible on the screen of the render destination device model are transparent.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "type": "object"
+          },
           "sourceLineNumber": {
             "description": "The 1-based line number in the source file where the rendered preview is defined. Useful for disambiguating a preview from others that share the same display name in the same file (which Xcode\u2019s canvas shows as a \u201cLine N\u201d subtitle).",
             "type": "integer"
           },
-          "supportedCanvasControlOverrides": {
-            "description": "The supported canvas control overrides for this preview, which can be passed to the tool in the `previewCanvasControlOverrides` parameter in subsequent tool invocations. Contains `timelineIndexes` for previews that vary across a timeline (such as Widgets or Live Activities) and `toggleStates` for previews that have a toggle control. Omitted if the preview doesn't support any canvas control overrides.",
+          "supportedOverrides": {
+            "description": "The overrides and options this preview supports, grouped together. Any values reported here can be supplied to the tool in a subsequent invocation for the same active scheme and run destination to customize the render.",
             "properties": {
-              "groupItems": {
-                "description": "List of supported group items for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. The value of the `index` field of one of these items can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` input structure to choose a group item to render. Omitted if the preview doesn't have a group item control.",
-                "items": {
-                  "properties": {
-                    "index": {
-                      "description": "Zero-based index of the group item, which can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` structure of the input structure to render that group item.",
+              "canvasControls": {
+                "description": "The supported canvas control overrides for this preview, which can be passed to the tool in the `previewCanvasControlOverrides` parameter in subsequent tool invocations. Contains `timelineIndexes` for previews that vary across a timeline (such as Widgets or Live Activities) and `toggleStates` for previews that have a toggle control. Omitted if the preview doesn't support any canvas control overrides.",
+                "properties": {
+                  "groupItems": {
+                    "description": "List of supported group items for previews that vary across a set of input arguments via the `arguments:` parameter in their `#Preview` macro. The value of the `index` field of one of these items can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` input structure to choose a group item to render. Omitted if the preview doesn't have a group item control.",
+                    "items": {
+                      "properties": {
+                        "index": {
+                          "description": "Zero-based index of the group item, which can be passed in the `groupItemIndex` field of the `previewCanvasControlOverrides` structure of the input structure to render that group item.",
+                          "type": "integer"
+                        },
+                        "title": {
+                          "description": "Optional human-readable title of the group item, derived from a string representation of the preview argument. Might not be unique among the group items.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "index"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "timelineIndexes": {
+                    "description": "List of supported timeline indexes for previews that vary across a timeline, such as Widgets or Live Activities. The indexes represents sequence numbers rather than specific times. Omitted if the preview doesn't have a timeline control.",
+                    "items": {
                       "type": "integer"
                     },
-                    "title": {
-                      "description": "Optional human-readable title of the group item, derived from a string representation of the preview argument. Might not be unique among the group items.",
+                    "type": "array"
+                  },
+                  "toggleStates": {
+                    "description": "List of supported toggle states, for previews that have toggle control. Omitted if the preview doesn't have a toggle control.",
+                    "items": {
+                      "type": "boolean"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              },
+              "displayModes": {
+                "description": "The display modes this preview supports, which can be passed to the tool in the `displayMode` input parameter in subsequent tool invocations for the same active scheme and run destination.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "localizations": {
+                "description": "The locale identifiers supported by the workspace (e.g. [\"en\", \"fr\", \"ja\"]), which can be passed to the tool in the `previewLocalizationOverride` parameter in subsequent tool invocations to preview in a specific language.",
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "previewVariants": {
+                "description": "The supported preview variant overrides, which can be passed to the tool in the `previewVariantOverrides` parameter in subsequent tool invocations. The keys are the names of variant groups that can be overridden, and the values are the names of the variants that are supported for that group.",
+                "type": "object"
+              },
+              "renderDestinations": {
+                "description": "The render destinations that are available for rendering this preview, given the currently active scheme. The `identifier` of any of these entries can be passed in the `identifier` field of the `preferredRenderDestination` input field of a subsequent invocation to render the preview on that specific destination. Omitted if the available destinations could not be determined.",
+                "items": {
+                  "properties": {
+                    "deviceModelName": {
+                      "description": "Display name of the device model of the render destination (e.g. \u201ciPhone 15 Pro\u201d, \u201ciPad Pro (11-inch) (2nd generation)\u201d, \u201cMy Mac\u201d). Omitted if not known.",
+                      "type": "string"
+                    },
+                    "identifier": {
+                      "description": "Opaque, stable identifier for this render destination. Pass this exact value back in the `identifier` field of the `preferredRenderDestination` input field of a subsequent invocation to render the preview on this destination.",
+                      "type": "string"
+                    },
+                    "platformName": {
+                      "description": "Display name of the platform of the render destination (e.g. \u201ciOS Simulator\u201d, \u201cmacOS\u201d). Omitted if not known.",
+                      "type": "string"
+                    },
+                    "systemVersion": {
+                      "description": "Operating System version of the render destination, in major.minor[.patch] form (e.g. \u201c17.2\u201d). Omitted if not known.",
                       "type": "string"
                     }
                   },
                   "required": [
-                    "index"
+                    "identifier"
                   ],
                   "type": "object"
-                },
-                "type": "array"
-              },
-              "timelineIndexes": {
-                "description": "List of supported timeline indexes for previews that vary across a timeline, such as Widgets or Live Activities. The indexes represents sequence numbers rather than specific times. Omitted if the preview doesn't have a timeline control.",
-                "items": {
-                  "type": "integer"
-                },
-                "type": "array"
-              },
-              "toggleStates": {
-                "description": "List of supported toggle states, for previews that have toggle control. Omitted if the preview doesn't have a toggle control.",
-                "items": {
-                  "type": "boolean"
                 },
                 "type": "array"
               }
             },
             "required": [],
-            "type": "object"
-          },
-          "supportedLocalizations": {
-            "description": "The locale identifiers supported by the workspace (e.g. [\"en\", \"fr\", \"ja\"]), which can be passed to the tool in the `previewLocalizationOverride` parameter in subsequent tool invocations to preview in a specific language. Do not call this tool in parallel with other invocations when this parameter is provided.",
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "supportedPreviewVariantOverrides": {
-            "description": "The supported preview variant overrides, which can be passed to the tool in the `previewVariantOverrides` parameter in subsequent tool invocations. The keys are the names of variant groups that can be overridden, and the values are the names of the variants that are supported for that group.",
             "type": "object"
           }
         },
@@ -3638,9 +3738,13 @@
       "title": "Move File"
     },
     {
-      "description": "Creates directories and groups in the Xcode project structure.",
+      "description": "Creates directories in the Xcode project structure. Creates a file system synchronized (buildable) folder by default, or a classic group when requested.",
       "inputSchema": {
         "properties": {
+          "directoryKind": {
+            "description": "The kind of directory to create: 'folder' (default) creates a file system synchronized (buildable) folder, matching the project navigator's New Folder command and the recommended layout for modern projects; 'group' creates a classic Xcode group backed by a directory on disk. Falls back to whatever the parent supports.",
+            "type": "string"
+          },
           "directoryPath": {
             "description": "Project navigator relative path for the directory to create",
             "type": "string"

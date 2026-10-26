@@ -2,7 +2,7 @@
 
 Reference documentation for Xcode’s MCP server. It lets AI coding assistants browse and edit projects, build apps, run tests, and render previews.
 
-> Covers **Xcode 27**. See the [changelog](CHANGELOG.md) for changes since Xcode 26.5 and the additions in [Xcode 27.2 beta](CHANGELOG.md#xcode-272-beta).
+> Covers **Xcode 27**. See the [changelog](CHANGELOG.md) for changes since Xcode 26.5 and the additions in [Xcode 27.2 RC](CHANGELOG.md#xcode-272-rc).
 
 <p align="center">
   <img src=".github/screenshot.png" width="60%"/>
@@ -49,7 +49,7 @@ codex mcp add xcode -- xcrun mcpbridge
 | [Headless mode](docs/headless.md) | Setup without an Xcode window, permissions, and server internals |
 | [Agent tooling](docs/agent-tooling.md) | Bridge configuration, agent launcher, skill export, and the separate LLDB server |
 | [Schemas](docs/schemas.md) | Raw MCP tool definitions by Xcode version and mode |
-| [Changelog](CHANGELOG.md) | Changes in Xcode 27 and 27.2 beta |
+| [Changelog](CHANGELOG.md) | Changes in Xcode 27 and 27.2 RC |
 
 ## Apple Documentation
 
