@@ -34,7 +34,7 @@ Request and permission ids come from `mcp-server status`. For unattended environ
 
 ## What actually runs
 
-`xcrun mcp-server` is only a launcher, and so is `xcrun mcpbridge` — with headless mode on it launches or reuses the headless service through LaunchServices, so no Xcode window is needed. The server itself is `XcodeService.app`, shipped inside the toolchain at `Xcode.app/Contents/Developer/Applications/XcodeService.app` with bundle identifier `com.apple.dt.mcp-server` and `LSUIElement`, so it has no Dock icon and no menu bar. It is started as a RunningBoard-managed application job — `launchctl print gui/$(id -u)/application.com.apple.dt.mcp-server.<n>.<n>` shows the job with `managed_by = com.apple.runningboard`. It is the same Xcode engine, not a separate reimplementation, and it can attach a UI later, so headless is a mode rather than a different product.
+`xcrun mcp-server` is only a launcher, and so is `xcrun mcpbridge` — with headless mode on it launches or reuses the headless service through LaunchServices, so no Xcode window is needed. The server itself is `Xcode Service.app`, shipped inside Xcode at `Xcode.app/Contents/Developer/Library/Xcode/Agents/Xcode Service.app` with bundle identifier `com.apple.dt.mcp-server` and `LSUIElement`, so it has no Dock icon and no menu bar. It is started as a RunningBoard-managed application job — `launchctl print gui/$(id -u)/application.com.apple.dt.mcp-server.<n>.<n>` shows the job with `managed_by = com.apple.runningboard`. It is the same Xcode engine, not a separate reimplementation, and it can attach a UI later, so headless is a mode rather than a different product.
 
 ## Permissions
 

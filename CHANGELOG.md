@@ -10,7 +10,7 @@ Everything below compares **Xcode 27** against the previous release, **Xcode 26.
 
 - **Added:** `xcrun mcp-server` — headless MCP server that runs without an open workspace, plus durable per-agent/per-folder permissions; see [Headless mode](docs/headless.md#headless-mode)
 - **Added:** `xcrun lldb-mcp` — a separate MCP server for LLDB; see [Agent tooling](docs/agent-tooling.md#agent-tooling)
-- **Changed:** `mcpbridge` connects to the `xcode-select` Xcode by default (`MCP_XCODE_PID`/`MCP_XCODE_SESSION_ID` to override), and reaches the headless `XcodeService.app` when headless mode is on
+- **Changed:** `mcpbridge` connects to the `xcode-select` Xcode by default (`MCP_XCODE_PID`/`MCP_XCODE_SESSION_ID` to override), and reaches the headless `Xcode Service.app` when headless mode is on
 - **Changed:** `run-agent` (which 26.5 already had) gained the `skills` and `plugin` subcommands — export Xcode's skills, or materialize them as an agent plugin; see [Agent tooling](docs/agent-tooling.md#agent-tooling)
 - **Changed:** `tabIdentifier` is no longer required on any tool — omit it when only one workspace tab is open. In headless mode it becomes `workspaceIdentifier` and takes a workspace identifier or an absolute path
 

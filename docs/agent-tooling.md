@@ -30,7 +30,7 @@ xcrun agent plugin path --plugin-format claude|codex|gemini
 claude --plugin-dir "$(xcrun agent plugin path --plugin-format claude)"
 ```
 
-The path is `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/<build>/<format>` — cached, and versioned per Xcode build. Each format differs only in packaging (`.claude-plugin/plugin.json` + an `.mcp.json` wired to `mcpbridge`, `.codex-plugin/plugin.json`, `gemini-extension.json`); the skills themselves are the same. Rendering needs a running Xcode or `XcodeService`, otherwise you get an empty scaffold.
+The path is `~/Library/Developer/Xcode/CodingAssistant/ExportedPlugins/<build>/<format>` — cached, and versioned per Xcode build. Each format differs only in packaging (`.claude-plugin/plugin.json` + an `.mcp.json` wired to `mcpbridge`, `.codex-plugin/plugin.json`, `gemini-extension.json`); the skills themselves are the same. Rendering needs a running Xcode or `Xcode Service`, otherwise you get an empty scaffold.
 
 `skills export` writes bare skill directories instead, but only **10** of the 15 — without the three `accessibility-*` skills and the two [localization](tools.md#localization) ones:
 
