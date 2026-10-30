@@ -34,9 +34,9 @@ Everything below compares **Xcode 27** against the previous release, **Xcode 26.
 - [`RunAllTests`](docs/tools.md#runalltests) / [`RunSomeTests`](docs/tools.md#runsometests): output adds `xcresultBundlePath` for `xcresulttool`/`xccov`
 - [`RenderPreview`](docs/tools.md#renderpreview): new `previewCanvasControlOverrides` (timeline, toggle, group item) and `previewLocalizationOverride` parameters; output adds `displayName`, `sourceLineNumber`, `renderedDestination`, `supportedCanvasControlOverrides`, and `supportedLocalizations`
 
-## Xcode 27.2 RC
+## Xcode 27.2
 
-The main documentation reflects Xcode 27; this section lists what **Xcode 27.2 RC** (27B48, server 25463; beta 2 is 27B5028f/25447.1, beta 1 is 27B5019j/25434.2, 27 is 25317) changes on top of it. Captured from `tools/list` of both servers: [tools-27.2.json](tools-27.2.json) (windowed) and [tools-headless-27.2.json](tools-headless-27.2.json) (headless). Both change identically; the windowed/headless split is unchanged from 27.
+The main documentation reflects Xcode 27; this section lists what **Xcode 27.2** (27B52, server 25464; RC is 27B48/25463, beta 2 is 27B5028f/25447.1, beta 1 is 27B5019j/25434.2, 27 is 25317) changes on top of it. Captured from `tools/list` of both servers: [tools-27.2.json](tools-27.2.json) (windowed) and [tools-headless-27.2.json](tools-headless-27.2.json) (headless). Both change identically; the windowed/headless split is unchanged from 27. The release's `tools/list` is identical to the RC's.
 
 - No tools added or removed
 - [`RenderPreview`](docs/tools.md#renderpreview): new `preferredRenderDestination` parameter — pick the device or simulator to render on by `identifier`, `platformName`, `deviceModelName`, and/or `systemVersion`; falls back to the automatic destination with a message in `errors` when nothing matches. `renderedDestination` gains a required `identifier`
@@ -46,4 +46,4 @@ The main documentation reflects Xcode 27; this section lists what **Xcode 27.2 R
 - [`AddInfoPlist`](docs/tools.md#addinfoplist) *(RC)*: new `dictionary` value type — `infoPlistDictionaryItems` then takes a JSON-encoded dictionary instead of an array
 - [`XcodeMakeDir`](docs/tools.md#xcodemakedir) *(RC)*: new `directoryKind` parameter — `folder` (default) creates a file system synchronized (buildable) folder, `group` a classic group backed by a directory; falls back to what the parent supports
 - [`InvokeDebuggerCommand`](docs/tools.md#invokedebuggercommand) *(beta 2)*: description now steers toward `p`/`v` over `po`/`expression` to avoid unnecessary expression evaluation; schema unchanged
-- `GetCodeCoverage` is announced in the beta 2 release notes (181141715) but still isn't in the RC — absent from `tools/list` of both servers
+- `GetCodeCoverage` is announced in the beta 2 release notes (181141715) but still isn't in the release — absent from `tools/list` of both servers
