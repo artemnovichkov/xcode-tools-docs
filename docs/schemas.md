@@ -16,5 +16,7 @@ These files contain the raw `tools/list` output: tool names, titles, description
 | [tools-26.5.json](../tools-26.5.json) | 26.5 | Previous release, used as the comparison baseline |
 | [tools-27.2.json](../tools-27.2.json) | 27.2 RC (27B48) | `xcrun mcpbridge` connected to a running Xcode |
 | [tools-headless-27.2.json](../tools-headless-27.2.json) | 27.2 (27B52) | Headless server |
+| [tools-27.3.json](../tools-27.3.json) | 27.3 beta 1 (27C5020n) | `xcrun mcpbridge` connected to a running Xcode |
+| [tools-headless-27.3.json](../tools-headless-27.3.json) | 27.3 beta 1 (27C5020n) | Headless server |
 
-See the changelog for [changes since Xcode 26.5](../CHANGELOG.md#whats-new-in-xcode-27) and [additions in Xcode 27.2](../CHANGELOG.md#xcode-272).
+See the changelog for [changes since Xcode 26.5](../CHANGELOG.md#whats-new-in-xcode-27) and additions in [Xcode 27.2](../CHANGELOG.md#xcode-272) and [Xcode 27.3 beta 1](../CHANGELOG.md#xcode-273-beta-1).

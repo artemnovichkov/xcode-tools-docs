@@ -52,3 +52,15 @@ The main documentation reflects Xcode 27; this section lists what **Xcode 27.2**
 - [`XcodeMakeDir`](docs/tools.md#xcodemakedir) *(RC)*: new `directoryKind` parameter — `folder` (default) creates a file system synchronized (buildable) folder, `group` a classic group backed by a directory; falls back to what the parent supports
 - [`InvokeDebuggerCommand`](docs/tools.md#invokedebuggercommand) *(beta 2)*: description now steers toward `p`/`v` over `po`/`expression` to avoid unnecessary expression evaluation; schema unchanged
 - `GetCodeCoverage` is announced in the beta 2 release notes (181141715) but still isn't in the release — absent from `tools/list` of both servers
+
+## Xcode 27.3 beta 1
+
+The main documentation reflects Xcode 27; this section lists what **Xcode 27.3 beta 1** (27C5020n, server 25515.6) changes on top of 27.2 (27B52, server 25464). Captured from `tools/list` of both servers: [tools-27.3.json](tools-27.3.json) (windowed) and [tools-headless-27.3.json](tools-headless-27.3.json) (headless). Both change identically; the windowed/headless split is unchanged.
+
+- No tools added or removed
+- [`DeviceInteractionStartSession`](docs/tools.md#deviceinteractionstartsession) / [`DeviceInteractionStartWorkspaceSession`](docs/tools.md#deviceinteractionstartworkspacesession) *(breaking)*: `deviceIsSimulator` is removed from the output. Descriptions now say simulator instead of device/simulator, and `deviceIdentifier` matches the UUID/name/OS version/type of the simulator — ECID is dropped. The release notes don't mention this change
+- [`DeviceInteractionSynthesize`](docs/tools.md#deviceinteractionsynthesize): description now says simulator instead of physical device or simulator, and adds setting the hinge angle in degrees on foldable devices
+- [`GetTargetBuildSettings`](docs/tools.md#gettargetbuildsettings): new `buildSettingNames` parameter — return only the named settings, case-insensitive with `*` wildcards (e.g. `SWIFT_*`). Omitted returns all settings, an empty list none. Output adds a required `notFound` with the names or patterns that matched nothing
+- [`RenderPreview`](docs/tools.md#renderpreview): output adds `producibleOutputsByMode` — for each supported display mode, the `displayMode` name and the `outputs` it produces; unlisted fields are omitted for that mode
+- [`RenderPreview`](docs/tools.md#renderpreview), per the [release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27_3-release-notes), with no schema change: snapshot filenames and metadata include the applied overrides (176531615); interactive delayed snapshots work for macOS previews (181244878); fixed reporting no previews before they finished loading (188424749) and rendering a different preview than the one requested (188817121)
+- `GetCodeCoverage` is still absent from `tools/list` of both servers

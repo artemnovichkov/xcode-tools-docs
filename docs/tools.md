@@ -506,6 +506,9 @@ Gets all build settings for an Xcode target. Use this rather than reading `proje
 | `tabIdentifier` | string | No | Workspace tab identifier |
 | `targetName` | string | Yes | Target name |
 | `projectPath` | string | No | Path to the owning `.xcodeproj`; only needed when the target name is ambiguous |
+| `buildSettingNames` | string[] | No | *Xcode 27.3 beta 1.* Build setting names to return (e.g. `PRODUCT_NAME`, `SWIFT_*`). Case-insensitive, surrounding whitespace ignored, `*` matches any sequence of characters. Omitted → all settings; empty list → none |
+
+*Xcode 27.3 beta 1:* the output adds a required `notFound` — requested names or patterns that matched nothing; empty when `buildSettingNames` is omitted.
 
 **Example:**
 ```
@@ -752,6 +755,8 @@ Builds and renders a SwiftUI preview, returning a snapshot of the resulting UI. 
 
 > **Xcode 27.2:** the output is reorganized. The discovery fields move into one `supportedOverrides` object: `localizations`, `previewVariants`, `canvasControls`, `renderDestinations`, and the new `displayModes`. The snapshot path moves from `previewSnapshotPath` to `snapshot.path`. The render destination can be picked: pass an `identifier` from `supportedOverrides.renderDestinations` in `preferredRenderDestination`; `renderedDestination` gains a required `identifier`. `displayMode: "interactive"` renders the preview live and snapshots it after `snapshotDelay` seconds. `canvasControls.groupItems` entries are `{index, title?}` objects, and `errors` is always present. See [Xcode 27.2](../CHANGELOG.md#xcode-272).
 
+> **Xcode 27.3 beta 1:** the output adds `producibleOutputsByMode` — for each display mode the preview supports, a `displayMode` name and the `outputs` it produces. Fields not listed are omitted from the output for that mode. Per the release notes, snapshot filenames and metadata include the applied overrides, and interactive delayed snapshots work for macOS previews. See [Xcode 27.3 beta 1](../CHANGELOG.md#xcode-273-beta-1).
+
 The override parameters are discovery-driven: call the tool once, read `supportedLocalizations`, `supportedPreviewVariantOverrides`, and `supportedCanvasControlOverrides` from the result, then pass values from those back in.
 
 | Parameter | Type | Required | Description |
@@ -904,6 +909,8 @@ RunSomeTests(
 
 Tools for driving a simulator or physical device — booting it, installing and launching the app, and synthesizing UI events. Sessions are expensive to keep open: start one early (in parallel with other work) and always close it with `DeviceInteractionEndSession` when done.
 
+> **Xcode 27.3 beta 1:** the schemas of `DeviceInteractionStartSession`, `DeviceInteractionStartWorkspaceSession`, and `DeviceInteractionSynthesize` describe simulators only: physical-device wording and ECID matching are gone, and `deviceIsSimulator` is removed from the session output. See [Xcode 27.3 beta 1](../CHANGELOG.md#xcode-273-beta-1).
+
 ### DeviceInteractionStartSession
 
 Prepares a runtime for device interaction **without** a workspace — finds and, if necessary, boots the target device. Call this as early as possible if device interaction will be needed. This session cannot build or install the project; use `DeviceInteractionStartWorkspaceSession` for that.
@@ -911,7 +918,7 @@ Prepares a runtime for device interaction **without** a workspace — finds and,
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `sessionIdentifier` | string | Yes | Unique, human-friendly session name in Title Case (e.g. "Verify Login Flow"), used in logs and UI |
-| `deviceIdentifier` | string | Yes | UUID/ECID/name/OS version/type to match against — the best candidate is selected |
+| `deviceIdentifier` | string | Yes | UUID/ECID/name/OS version/type to match against — the best candidate is selected. *Xcode 27.3 beta 1:* UUID/name/OS version/type of the simulator; no ECID |
 
 **Example:**
 ```
@@ -926,7 +933,7 @@ Prepares a runtime for device interaction **with** a workspace. Same as `DeviceI
 |-----------|------|----------|-------------|
 | `tabIdentifier` | string | No | Workspace tab identifier |
 | `sessionIdentifier` | string | Yes | Unique, human-friendly session name in Title Case (e.g. "Verify Login Flow"), used in logs and UI |
-| `deviceIdentifier` | string | No | UUID/ECID/name/OS version/type to match against — the best candidate is selected |
+| `deviceIdentifier` | string | No | UUID/ECID/name/OS version/type to match against — the best candidate is selected. *Xcode 27.3 beta 1:* UUID/name/OS version/type of the simulator; no ECID |
 
 **Example:**
 ```
@@ -951,7 +958,7 @@ DeviceInteractionInstallAndRun(interactionSessionKey: "...")
 
 ### DeviceInteractionSynthesize
 
-Synthesizes device events — tap, swipe, type, button press, orientation change — and captures the resulting screenshot and UI hierarchy. Always derive coordinates from the latest hierarchy dump; never guess positions from a screenshot alone.
+Synthesizes device events — tap, swipe, type, button press, orientation change, and (*Xcode 27.3 beta 1*) hinge angle in degrees on foldable devices — and captures the resulting screenshot and UI hierarchy. Always derive coordinates from the latest hierarchy dump; never guess positions from a screenshot alone.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
