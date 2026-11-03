@@ -2,6 +2,8 @@
 
 Reference documentation for Xcode’s MCP server. It lets AI coding assistants browse and edit projects, build apps, run tests, and render previews.
 
+Read it as a site: **[artemnovichkov.github.io/xcode-tools-docs](https://artemnovichkov.github.io/xcode-tools-docs/)**
+
 > Covers **Xcode 27**. See the [changelog](CHANGELOG.md) for changes since Xcode 26.5 and the additions in [Xcode 27.2](CHANGELOG.md#xcode-272).
 
 <p align="center">
