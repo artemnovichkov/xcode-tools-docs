@@ -27,7 +27,7 @@ Everything below compares **Xcode 27** against the previous release, **Xcode 26.
 ### Changed tools
 
 - **Renamed:** `ExecuteSnippet` → [`RunCodeSnippet`](docs/tools.md#runcodesnippet), which gained a required `purpose` parameter
-- **Asset-gated:** [`DocumentationSearch`](docs/tools.md#documentationsearch-) — its results gained a `kind` field. In 27 the tool is gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset, and while the asset is missing the tool is absent from `tools/list` in both modes. With the asset installed it's listed normally by both servers
+- **Asset-gated:** [`DocumentationSearch`](docs/tools.md#documentationsearch) — its results gained a `kind` field. In 27 the tool is gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset, and while the asset is missing the tool is absent from `tools/list` in both modes. With the asset installed it's listed normally by both servers
 - **Fixed:** [`XcodeMV`](docs/tools.md#xcodemv)'s `operation` is now a plain string enum (`move`/`copy`); in 26.5 it was declared as an object with a `rawValue` field
 - [`BuildProject`](docs/tools.md#buildproject): new `buildForTesting` parameter — also build test targets that a regular build would skip
 - [`GetBuildLog`](docs/tools.md#getbuildlog): `line` is no longer required on an issue — issues without a line number are now representable

@@ -67,8 +67,6 @@ defaults:
       title: Changelog
       nav_order: 6
 
-include:
-  - .github
 
 exclude:
   - .claude

@@ -68,4 +68,4 @@ Two things are worth knowing before enabling this:
 
 Every tool that takes a `tabIdentifier` in a window takes a **`workspaceIdentifier`** instead: *"Identifies the target workspace directly (used in headless mode): its workspace identifier (e.g. workspace1) or its absolute path."* It accepts either the identifier returned by `XcodeOpenWorkspace`/`XcodeListWorkspaces` (in practice something like `workspace-LKfjPJCMBL`) or the absolute path of the project. Prompts, skills, and scripts that hardcode `tabIdentifier` need updating for headless mode.
 
-[`DocumentationSearch`](tools.md#documentationsearch-) behaves the same in both modes: listed once its documentation asset is installed, absent from `tools/list` while it isn't.
+[`DocumentationSearch`](tools.md#documentationsearch) behaves the same in both modes: listed once its documentation asset is installed, absent from `tools/list` while it isn't.

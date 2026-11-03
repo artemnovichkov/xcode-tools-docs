@@ -5,7 +5,7 @@ Reference documentation for Xcode’s MCP server. It lets AI coding assistants b
 > Covers **Xcode 27**. See the [changelog](CHANGELOG.md) for changes since Xcode 26.5 and the additions in [Xcode 27.2](CHANGELOG.md#xcode-272).
 
 <p align="center">
-  <img src=".github/screenshot.png" width="60%"/>
+  <img src="assets/screenshot.png" width="60%"/>
 </p>
 
 ## Quick start

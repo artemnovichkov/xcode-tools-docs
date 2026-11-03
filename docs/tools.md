@@ -115,7 +115,7 @@ Grouped the way Apple groups them in its *Xcode MCP Tools for Agents* overview (
 
 | Tool | What it does |
 |---|---|
-| [DocumentationSearch](#documentationsearch-) ⚠️ | Semantic search over Apple Developer Documentation |
+| [DocumentationSearch](#documentationsearch) ⚠️ | Semantic search over Apple Developer Documentation |
 
 ## Workspaces and Projects
 
@@ -1149,7 +1149,7 @@ GetFieldPerformanceIssueLogs(
 
 ## Documentation
 
-### DocumentationSearch ⚠️
+### DocumentationSearch
 
 > **Status in Xcode 27:** gated on the local `com.apple.MobileAsset.AppleDeveloperDocumentation` asset (visible under Settings → Components → Downloads) — until it finishes downloading/indexing, the tool returns `Tool 'DocumentationSearch' is not enabled.` The gate also hides it from `tools/list`, so a standard MCP client can't discover it at all: on a fresh Xcode 27 install the headless server listed 53 tools without it, and after the documentation finished downloading the same server listed 54 with it. Once the asset is in place it's listed normally by both the windowed and headless servers and calls return real results. Xcode's own built-in chat knows the tool by name independently of `tools/list` (via a `MCPTool_DocumentationSearch` flag in its system prompt template).
 
