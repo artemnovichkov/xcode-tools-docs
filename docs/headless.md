@@ -1,3 +1,8 @@
+---
+title: Headless mode
+nav_order: 3
+---
+
 # Headless mode
 
 [README](../README.md) · [Tool reference](tools.md) · [Headless mode](headless.md) · [Agent tooling](agent-tooling.md) · [Schemas](schemas.md) · [Changelog](../CHANGELOG.md)

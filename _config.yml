@@ -36,37 +36,12 @@ defaults:
       path: ""
     values:
       layout: default
+  # README.md has no front matter so jekyll-readme-index keeps serving it as the home page.
   - scope:
       path: README.md
     values:
       title: Home
       nav_order: 1
-  - scope:
-      path: docs/tools.md
-    values:
-      title: Tool reference
-      nav_order: 2
-  - scope:
-      path: docs/headless.md
-    values:
-      title: Headless mode
-      nav_order: 3
-  - scope:
-      path: docs/agent-tooling.md
-    values:
-      title: Agent tooling
-      nav_order: 4
-  - scope:
-      path: docs/schemas.md
-    values:
-      title: Schemas
-      nav_order: 5
-  - scope:
-      path: CHANGELOG.md
-    values:
-      title: Changelog
-      nav_order: 6
-
 
 exclude:
   - .claude

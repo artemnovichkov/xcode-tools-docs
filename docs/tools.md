@@ -1,3 +1,8 @@
+---
+title: Tool reference
+nav_order: 2
+---
+
 # Tool reference
 
 [README](../README.md) · [Tool reference](tools.md) · [Headless mode](headless.md) · [Agent tooling](agent-tooling.md) · [Schemas](schemas.md) · [Changelog](../CHANGELOG.md)

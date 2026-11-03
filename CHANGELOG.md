@@ -1,3 +1,8 @@
+---
+title: Changelog
+nav_order: 6
+---
+
 # Changelog
 
 [README](README.md) · [Tool reference](docs/tools.md)

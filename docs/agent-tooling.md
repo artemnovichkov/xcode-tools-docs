@@ -1,3 +1,8 @@
+---
+title: Agent tooling
+nav_order: 4
+---
+
 # Agent tooling
 
 [README](../README.md) · [Tool reference](tools.md) · [Headless mode](headless.md) · [Agent tooling](agent-tooling.md) · [Schemas](schemas.md) · [Changelog](../CHANGELOG.md)

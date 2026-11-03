@@ -1,3 +1,8 @@
+---
+title: Schemas
+nav_order: 5
+---
+
 # Schema
 
 [README](../README.md) · [Tool reference](tools.md) · [Headless mode](headless.md) · [Agent tooling](agent-tooling.md) · [Schemas](schemas.md) · [Changelog](../CHANGELOG.md)
