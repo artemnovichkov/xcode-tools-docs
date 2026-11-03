@@ -1,0 +1,75 @@
+title: Xcode Tools Documentation
+description: Reference documentation for Xcode's MCP server — tool reference, headless mode, agent tooling, and raw schemas.
+url: https://artemnovichkov.github.io
+baseurl: /xcode-tools-docs
+
+remote_theme: just-the-docs/just-the-docs@v0.12.0
+color_scheme: dark
+
+# Enabled by default on GitHub Pages; listed to document what the site relies on.
+plugins:
+  - jekyll-include-cache
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-relative-links
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+search_enabled: true
+search:
+  heading_level: 3
+  previews: 2
+  button: false
+heading_anchors: true
+back_to_top: true
+back_to_top_text: Back to top
+
+aux_links:
+  GitHub: https://github.com/artemnovichkov/xcode-tools-docs
+aux_links_new_tab: false
+
+footer_content: Artem Novichkov, <a href="https://artemnovichkov.com">artemnovichkov.com</a>
+
+# Page metadata lives here so the Markdown files stay plain and readable on GitHub.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: README.md
+    values:
+      title: Home
+      nav_order: 1
+  - scope:
+      path: docs/tools.md
+    values:
+      title: Tool reference
+      nav_order: 2
+  - scope:
+      path: docs/headless.md
+    values:
+      title: Headless mode
+      nav_order: 3
+  - scope:
+      path: docs/agent-tooling.md
+    values:
+      title: Agent tooling
+      nav_order: 4
+  - scope:
+      path: docs/schemas.md
+    values:
+      title: Schemas
+      nav_order: 5
+  - scope:
+      path: CHANGELOG.md
+    values:
+      title: Changelog
+      nav_order: 6
+
+include:
+  - .github
+
+exclude:
+  - .claude
+  - .DS_Store
